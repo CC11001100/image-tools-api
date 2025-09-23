@@ -1,0 +1,82 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Node modules
+frontend/node_modules
+node_modules
+
+# Build artifacts
+# frontend/build  # 注释掉，因为我们需要在Docker中使用前端构建产物
+build
+build_optimized
+deploy_package
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Documentation
+docs/
+README*.md
+*.md
+
+# Scripts
+deploy*.sh
+start.sh
+kill_ports.sh
+build*.sh
+
+# Test files
+tests/
+test_*.py
+*_test.py

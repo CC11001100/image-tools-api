@@ -1,0 +1,761 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Node.js (for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# React build
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Logs
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Test coverage
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files (if any)
+uploads/
+media/
+
+# Environment variables
+.env.*
+
+# IDE specific files
+*.sublime-project
+*.sublime-workspace
+
+# Project specific
+processed_images/
+temp_images/
+
+# Deployment files
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar
+*.zip
+*.rar
+*.7z
+
+# Docker deployment artifacts
+image-tools-backend-*.tar.gz
+image-tools-frontend-*.tar.gz
+docker-images/
+deployment-packages/
+
+# Build artifacts
+*.build
+*.deb
+*.rpm
+*.pkg
+*.dmg
+*.msi
+*.exe
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Process ID files
+*.pid
+
+# Configuration backups
+*.conf.bak
+*.config.bak
+
+# SSL certificates and keys
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# Kubernetes deployment files (if any)
+k8s-secrets/
+*.kubeconfig
+
+# Terraform state files (if any)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Ansible vault files (if any)
+vault.yml
+*.vault
+
+# CI/CD artifacts
+.github/workflows/secrets/
+.gitlab-ci-local/
+jenkins/
+.circleci/config.local.yml
+
+# Monitoring and metrics
+prometheus/
+grafana/
+metrics/
+
+# Cache directories
+.cache/
+cache/
+tmp/
+temp/
+
+# Runtime data
+pids/
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+
+# Test scripts (generated for verification)
+test_*.js
+test_*.py
+*_test.js
+*_test.py
+debug_*.py
+test_*_watermark*.py
+test_enhanced_*.py
+test_tile_*.py
+test_comprehensive_*.py
+
+# Project specific test files
+complete_api_test.py
+complete_test.py
+comprehensive_all_endpoints_test.py
+comprehensive_api_test.py
+final_comprehensive_test.py
+final_test.py
+final_test_report.py
+quick_test.py
+test_all_api_formats.py
+test_all_endpoints.sh
+test_api_responses.py
+test_api_simple.sh
+test_deployment.sh
+test_deployment_verification.py
+test_enhanced_watermark.py
+test_enhanced_watermark_comprehensive.py
+test_final_deployment.py
+test_final_enhanced_watermark.py
+test_final_verification.js
+test_production_deployment.py
+test_production_final.py
+test_resize_api.py
+test_resize_api.sh
+test_simple_verification.py
+test_simple_watermark.py
+test_tile_watermark.py
+test_prod.py
+
+# Frontend test files
+test_all_image_composition_pages.js
+test_footer_implementation.js
+test_git_and_final_status.js
+test_multi_image_phone_frame.js
+test_overlay_functionality.js
+test_production_deployment.js
+test_qr_size_update.js
+test_wechat_qr_update.js
+
+# Test output files
+watermark_test_output.jpg
+*_test_output.*
+test_output_*
+output_test_*
+
+# Test report files
+test_report.json
+test_report.md
+frontend_config_test_results.json
+image_load_test_report.json
+*_test_report.*
+test_report_*
+report_test_*
+
+# Frontend test results
+frontend/test-results/
+frontend/coverage/
+frontend/.nyc_output/
+
+# Playwright test results
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Additional test files and results
+test_final_*.py
+test_deployment_*.py
+test_verification_*.py
+test_production_*.py
+test_api_*.py
+test_watermark_*.py
+test_image_*.py
+test_functionality_*.py
+test_integration_*.py
+test_e2e_*.py
+test_regression_*.py
+test_performance_*.py
+test_load_*.py
+test_stress_*.py
+test_security_*.py
+test_compatibility_*.py
+test_acceptance_*.py
+test_uat_*.py
+
+# Test result images
+*.test.jpg
+*.test.png
+*.test.jpeg
+*.test.gif
+*.test.webp
+test_result_*.jpg
+test_result_*.png
+test_result_*.jpeg
+result_*.jpg
+result_*.png
+result_*.jpeg
+
+# Temporary test files
+temp_test_*
+tmp_test_*
+test_temp_*
+test_tmp_*
+
+# API test outputs
+api_test_*
+test_api_*
+api_response_*
+test_response_*
+
+# Watermark test outputs
+watermark_test_*
+test_watermark_*
+watermark_result_*
+test_watermark_result_*
+
+# Image processing test outputs
+processed_test_*
+test_processed_*
+enhanced_test_*
+test_enhanced_*
+
+# Comprehensive test outputs
+comprehensive_*
+final_*
+verification_*
+validation_*
+
+# Project specific additions
+# Harbor registry credentials (if any)
+.harbor-credentials
+harbor-config.json
+
+# Deployment logs and reports
+deploy_*.log
+deployment_*.log
+test_report_*.json
+endpoint_check_report.json
+
+# Script generated files
+scripts/test_*.log
+scripts/deploy_*.log
+scripts/build_*.log
+scripts/run_*.log
+
+# OSS/Cloud storage credentials
+oss-credentials.json
+.oss-config
+cloud-storage.env
+
+# API keys and tokens (additional patterns)
+*api-key*
+*token*
+*secret*
+*credential*
+.secrets/
+secrets.json
+config.secret.json
+
+# Docker compose override files
+docker-compose.override.yml
+docker-compose.local.yml
+docker-compose.dev.yml
+
+# Nginx configuration backups
+*.nginx.conf.bak
+nginx-*.conf
+
+# Production configuration files
+production.env
+prod.env
+staging.env
+.env.production
+.env.staging
+
+# Health check and monitoring files
+health-check.log
+monitoring.log
+metrics.log
+performance.log
+
+# Image processing temporary files
+image_processing_temp/
+temp_processed/
+processing_cache/
+image_cache/
+
+# AI model files (if any)
+models/
+*.model
+*.weights
+*.h5
+*.pb
+*.onnx
+
+# Large test files
+large_test_images/
+test_images_large/
+sample_images_backup/
+
+# Backup directories
+backup/
+backups/
+archive/
+archives/
+
+# Development tools
+.devcontainer/
+.vscode/settings.json
+.vscode/launch.json
+.idea/workspace.xml
+.idea/tasks.xml
+
+# Package manager lock files (additional)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# System files
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Editor temporary files
+.#*
+\#*#
+*.autosave
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Python virtual environment variations
+.pyenv-version
+python-version
+venv_playwright/
+venv_*/
+
+# FastAPI specific
+
+# React/Node.js specific additions
+frontend/.env
+frontend/dist/
+frontend/.next/
+frontend/out/
+
+# Additional log patterns
+*.access.log
+*.error.log
+*.debug.log
+*.info.log
+*.warn.log
+*.trace.log
+
+# Performance and profiling
+*.prof
+*.profile
+*.perf
+profiling/
+performance/
+
+# Documentation build
+docs/build/
+site/
+
+# Localization
+*.po
+locale/
+translations/
+
+# ===== PROJECT SPECIFIC ADDITIONS =====
+
+# Static resource migration reports
+*_migration_report.json
+*_static_*_report.json
+oss_links_test_report.json
+final_static_resources_check_report.json
+remaining_static_migration_report.json
+all_static_migration_report.json
+
+# System analysis reports
+disk_usage_analysis_report.json
+docker_build_comparison_report.json
+final_system_test_report.json
+endpoint_check_report.json
+config_validation_results.json
+url_verification_results.json
+
+# Generated example files and uploads
+public/generated/
+public/test_image.jpg
+screenshots/
+watermark_test_output.jpg
+test_image.jpg
+
+# OSS migration backup files
+backup/
+remaining-static-files/
+
+# Development and testing scripts (root level)
+start_*.py
+deploy_*.py
+upload_*.py
+check_*.py
+batch_*.py
+debug_*.py
+fix_*.py
+verify_*.py
+final_*.py
+
+# Shell scripts (root level)
+*.sh
+!deploy.sh  # Keep main deploy script
+
+# Markdown reports (root level)
+图片OSS迁移完成报告.md
+REFACTORING_SUMMARY.md
+fix_deployment.md
+
+# Temporary archives
+frontend-new.tar
+*.tar.gz.backup
+
+# IDE and editor specific for this project
+.cursor/
+.cunzhi-memory/
+
+# Project specific temporary files
+temp/
+uploads/
+processed/
+output/
+
+# Large static files that should be in OSS
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.bmp
+*.svg
+*.ico
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.mp3
+*.wav
+*.ogg
+*.m4a
+
+# Exceptions for necessary files
+!frontend/public/favicon.ico
+!frontend/public/logo*.png
+!frontend/src/**/*.svg
+!docs/**/*.png
+!docs/**/*.jpg
+
+# Docker build contexts and images
+*.dockerfile.backup
+docker-compose.*.backup
+
+# Python package management
+requirements.*.txt
+!requirements.txt
+
+# Frontend package management variations
+frontend/package-lock.json.backup
+frontend/yarn.lock.backup
+
+# Nginx configuration variations
+nginx_*.conf
+*.nginx.conf
+image-tools.*.conf
+
+# Environment variations
+.env.*
+!.env.example
+
+# Deployment artifacts
+deployment-*.tar.gz
+image-tools-*-*.tar.gz
+
+# Testing artifacts specific to this project
+test_all_*.js
+test_*_watermark*.py
+test_enhanced_*.py
+test_final_*.py
+test_production_*.py
+test_deployment_*.py
+test_api_*.py
+comprehensive_*.py
+complete_*.py
+
+# Project build artifacts
+frontend/build/
+dist/
+build/
+
+# Cache directories specific to this project
+.cache/
+cache/
+frontend/.cache/
+frontend/node_modules/.cache/
+
+# Logs specific to this project
+logs/*.log
+*.access.log
+*.error.log
+app.log
+api.log
+server.log
+
+# Development databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary processing files
+temp_*
+tmp_*
+processing_*
+*_temp.*
+*_tmp.*

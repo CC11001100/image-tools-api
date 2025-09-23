@@ -1,0 +1,234 @@
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Body, Depends
+from fastapi.responses import Response
+from ..services.color_service import ColorService
+from ..services.file_upload_service import file_upload_service
+from ..utils.image_utils import ImageUtils
+from ..schemas.response_models import ErrorResponse, ApiResponse, ImageProcessResponse, FileInfo
+from ..middleware.auth_middleware import get_current_api_token
+from typing import Optional
+from pydantic import BaseModel
+
+class ColorByUrlRequest(BaseModel):
+    """颜色调整URL请求模型"""
+    image_url: str
+    adjustment_type: str
+    intensity: Optional[float] = 1.0
+    quality: Optional[int] = 90
+
+    # HSL调整参数
+    hue_shift: Optional[float] = 0.0
+    saturation_scale: Optional[float] = 1.0
+    lightness_scale: Optional[float] = 1.0
+
+    # 色彩平衡参数
+    red_bias: Optional[float] = 0.0
+    green_bias: Optional[float] = 0.0
+    blue_bias: Optional[float] = 0.0
+
+    # 色阶参数
+    black_point: Optional[int] = 0
+    white_point: Optional[int] = 255
+    gamma: Optional[float] = 1.0
+
+    # 色温色调参数
+    temperature: Optional[float] = 0.0
+    tint: Optional[float] = 0.0
+
+    # 双色调参数
+    shadow_color: Optional[str] = "#000000"
+    highlight_color: Optional[str] = "#ffffff"
+
+    # 自动校正参数
+    preserve_tone: Optional[bool] = True
+
+router = APIRouter(
+    tags=["color"],
+    responses={404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+)
+
+@router.post("/api/v1/color")
+async def adjust_color(
+    file: UploadFile = File(...),
+    adjustment_type: str = Form(...),
+    intensity: Optional[float] = Form(1.0),
+    quality: Optional[int] = Form(90),
+    api_token: str = Depends(get_current_api_token)
+):
+    """
+    调整上传图片的颜色并上传到AIGC网盘
+    """
+    try:
+        contents = await file.read()
+        # 根据adjustment_type调用相应的方法
+        if adjustment_type == "brightness":
+            result_bytes = ColorService.adjust_color(
+                image_bytes=contents,
+                brightness=intensity * 50,  # 将intensity转换为亮度值
+                quality=quality,
+            )
+        elif adjustment_type == "contrast":
+            result_bytes = ColorService.adjust_color(
+                image_bytes=contents,
+                contrast=intensity * 50,  # 将intensity转换为对比度值
+                quality=quality,
+            )
+        elif adjustment_type == "saturation":
+            result_bytes = ColorService.adjust_color(
+                image_bytes=contents,
+                saturation=intensity * 50,  # 将intensity转换为饱和度值
+                quality=quality,
+            )
+        else:
+            # 使用apply_color_effect方法处理其他效果
+            result_bytes = ColorService.apply_color_effect(
+                image_bytes=contents,
+                effect_type=adjustment_type,
+                intensity=intensity,
+                quality=quality,
+            )
+
+        # 准备上传参数
+        parameters = {
+            "adjustment_type": adjustment_type,
+            "intensity": intensity,
+            "quality": quality
+        }
+
+        # 上传到网盘
+        upload_response = await file_upload_service.upload_processed_image(
+            image_bytes=result_bytes,
+            api_token=api_token,
+            operation_type="color",
+            parameters=parameters,
+            original_filename=file.filename,
+            content_type=file.content_type or "image/jpeg"
+        )
+
+        if not upload_response:
+            raise HTTPException(status_code=500, detail="文件上传到网盘失败")
+
+        # 构造响应
+        file_info = FileInfo(**upload_response["file"])
+
+        return ApiResponse.success(
+            message="颜色调整处理并上传成功",
+            data={
+                "file_info": file_info.dict(),
+                "processing_info": parameters
+            }
+        )
+    except Exception as e:
+        return ApiResponse.error(
+            message=str(e),
+            code=500
+        )
+
+@router.post("/api/v1/color-by-url")
+async def adjust_color_by_url(
+    request: ColorByUrlRequest = Body(..., description="颜色调整URL请求参数"),
+    api_token: str = Depends(get_current_api_token)
+):
+    """
+    调整URL图片的颜色并上传到AIGC网盘
+    """
+    try:
+        # 处理相对路径，转换为完整URL
+        if request.image_url.startswith('/'):
+            # 相对路径，转换为本地文件路径
+            import os
+            file_path = os.path.join(os.getcwd(), "frontend/public" + request.image_url)
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as f:
+                    contents = f.read()
+                content_type = "image/jpeg"  # 默认类型
+            else:
+                raise HTTPException(status_code=404, detail=f"本地文件不存在: {file_path}")
+        else:
+            # 完整URL，下载图片
+            contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+
+        # 根据adjustment_type调用相应的方法
+        if request.adjustment_type == "brightness":
+            result_bytes = ColorService.adjust_color(
+                image_bytes=contents,
+                brightness=request.intensity * 50,
+                quality=request.quality,
+            )
+        elif request.adjustment_type == "contrast":
+            result_bytes = ColorService.adjust_color(
+                image_bytes=contents,
+                contrast=request.intensity * 50,
+                quality=request.quality,
+            )
+        elif request.adjustment_type == "saturation":
+            result_bytes = ColorService.adjust_color(
+                image_bytes=contents,
+                saturation=request.intensity * 50,
+                quality=request.quality,
+            )
+        elif request.adjustment_type == "hue":
+            result_bytes = ColorService.adjust_color(
+                image_bytes=contents,
+                hue=request.hue_shift,
+                quality=request.quality,
+            )
+        else:
+            # 使用apply_color_effect方法处理其他效果
+            result_bytes = ColorService.apply_color_effect(
+                image_bytes=contents,
+                effect_type=request.adjustment_type,
+                intensity=request.intensity,
+                quality=request.quality,
+            )
+
+        # 准备上传参数
+        parameters = {
+            "adjustment_type": request.adjustment_type,
+            "intensity": request.intensity,
+            "quality": request.quality,
+            "hue_shift": request.hue_shift,
+            "saturation_scale": request.saturation_scale,
+            "lightness_scale": request.lightness_scale,
+            "red_bias": request.red_bias,
+            "green_bias": request.green_bias,
+            "blue_bias": request.blue_bias,
+            "black_point": request.black_point,
+            "white_point": request.white_point,
+            "gamma": request.gamma,
+            "temperature": request.temperature,
+            "tint": request.tint,
+            "shadow_color": request.shadow_color,
+            "highlight_color": request.highlight_color,
+            "preserve_tone": request.preserve_tone,
+            "source_url": request.image_url
+        }
+
+        # 上传到网盘
+        upload_response = await file_upload_service.upload_processed_image(
+            image_bytes=result_bytes,
+            api_token=api_token,
+            operation_type="color",
+            parameters=parameters,
+            original_filename=None,
+            content_type=content_type or "image/jpeg"
+        )
+
+        if not upload_response:
+            raise HTTPException(status_code=500, detail="文件上传到网盘失败")
+
+        # 构造响应
+        file_info = FileInfo(**upload_response["file"])
+
+        return ApiResponse.success(
+            message="URL图片颜色调整处理并上传成功",
+            data={
+                "file": file_info.dict(),
+                "processing_info": parameters
+        
+            }
+        )
+    except Exception as e:
+        return ApiResponse.error(
+            message=str(e),
+            code=500
+        )
