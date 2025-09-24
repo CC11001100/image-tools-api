@@ -28,7 +28,6 @@ router = APIRouter(
 
 @router.post("/api/v1/resize")
 async def resize_image(
-    request: Request,
     file: UploadFile = File(...),
     width: Optional[int] = Form(None),
     height: Optional[int] = Form(None),

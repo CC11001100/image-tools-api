@@ -177,6 +177,71 @@ async def process_gif_by_url(
 
 @router.post("/api/v1/video-to-gif")
 async def video_to_gif(
+    file: UploadFile = File(...),
+    fps: Optional[int] = Form(10),
+    quality: Optional[int] = Form(90),
+    width: Optional[int] = Form(None),
+    height: Optional[int] = Form(None),
+    start_time: Optional[float] = Form(0),
+    duration: Optional[float] = Form(None),
+    api_token: str = Depends(get_current_api_token)
+):
+    """
+    将上传的视频文件转换为GIF并上传到AIGC网盘
+    """
+    try:
+        contents = await file.read()
+        result_bytes = GifService.video_to_gif(
+            video_bytes=contents,
+            fps=fps,
+            quality=quality,
+            width=width,
+            height=height,
+            start_time=start_time,
+            duration=duration
+        )
+
+        # 准备上传参数
+        parameters = {
+            "fps": fps,
+            "quality": quality,
+            "width": width,
+            "height": height,
+            "start_time": start_time,
+            "duration": duration
+        }
+
+        # 上传到网盘
+        upload_response = await file_upload_service.upload_processed_image(
+            image_bytes=result_bytes,
+            api_token=api_token,
+            operation_type="video_to_gif",
+            parameters=parameters,
+            original_filename=file.filename,
+            content_type="image/gif"
+        )
+
+        if not upload_response:
+            raise HTTPException(status_code=500, detail="文件上传到网盘失败")
+
+        # 构造响应
+        file_info = FileInfo(**upload_response["file"])
+
+        return ApiResponse.success(
+            message="视频转GIF并上传成功",
+            data={
+                "file": file_info.dict(),
+                "processing_info": parameters
+            }
+        )
+    except Exception as e:
+        return ApiResponse.error(
+            message=str(e),
+            code=500
+        )
+
+@router.post("/api/v1/video-to-gif-by-url")
+async def video_to_gif_by_url(
     request: VideoToGifRequest = Body(..., description="视频转GIF请求参数"),
     api_token: str = Depends(get_current_api_token)
 ):
