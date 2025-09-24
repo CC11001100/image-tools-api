@@ -622,6 +622,12 @@ endpoint_check_report.json
 config_validation_results.json
 url_verification_results.json
 
+# Frontend-Backend consistency and analysis reports
+frontend_backend_consistency_check.json
+*_consistency_check.json
+*_analysis_report.json
+api_*_report.json
+
 # Generated example files and uploads
 public/generated/
 public/test_image.jpg

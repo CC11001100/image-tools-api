@@ -8,6 +8,9 @@ from typing import Optional
 from pydantic import BaseModel
 import io
 
+# 导入子路由
+from . import rectangle, shape, smart
+
 class CropByUrlRequest(BaseModel):
     """图片裁剪URL请求模型"""
     image_url: str
@@ -22,6 +25,11 @@ router = APIRouter(
     tags=["crop"],
     responses={404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
 )
+
+# 包含子路由
+router.include_router(rectangle.router)
+router.include_router(shape.router)
+router.include_router(smart.router)
 
 @router.post("/api/v1/crop")
 async def crop_image(

@@ -1,14 +1,26 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Body
 from typing import Optional
 from ...services.image_service import ImageService
-from ...schemas.request_models import CropCircleRequest, CropPolygonRequest
-from .base import CropImageHandler
+from ...utils.image_utils import ImageUtils
+from ...schemas.response_models import ErrorResponse, ApiResponse
+from pydantic import BaseModel
+import base64
 
-from ...schemas.response_models import ApiResponse
-router = APIRouter()
+class CircleCropByUrlRequest(BaseModel):
+    """圆形裁剪URL请求模型"""
+    image_url: str
+    center_x: int
+    center_y: int
+    radius: int
+    quality: Optional[int] = 90
+
+router = APIRouter(
+    tags=["crop"],
+    responses={404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+)
 
 
-@router.post("/circle")
+@router.post("/api/v1/crop/circle")
 async def crop_circle(
     file: UploadFile = File(...),
     center_x: int = Form(...),
@@ -17,96 +29,71 @@ async def crop_circle(
     quality: Optional[int] = Form(90),
 ):
     """圆形裁剪图片"""
-    # 验证并创建请求模型
-    crop_request = CropCircleRequest(
-        center_x=center_x, center_y=center_y, radius=radius, quality=quality
-    )
-    
-    return await CropImageHandler.process_crop_upload(
-        file=file,
-        processor_func=ImageService.crop_circle,
-        media_type_override="image/png",  # 圆形裁剪返回PNG格式（支持透明背景）
-        center_x=crop_request.center_x,
-        center_y=crop_request.center_y,
-        radius=crop_request.radius,
-        quality=crop_request.quality,
-    )
+    try:
+        contents = await file.read()
+        result = ImageService.crop_circle(
+            image_bytes=contents,
+            center_x=center_x,
+            center_y=center_y,
+            radius=radius,
+            quality=quality
+        )
+
+        # 将图片转换为base64编码返回
+        result_base64 = base64.b64encode(result).decode('utf-8')
+
+        return ApiResponse.success(
+            message="圆形裁剪成功",
+            data={
+                "image_data": result_base64,
+                "content_type": "image/png",  # 圆形裁剪返回PNG格式（支持透明背景）
+                "processing_info": {
+                    "center_x": center_x,
+                    "center_y": center_y,
+                    "radius": radius,
+                    "quality": quality
+                }
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/circle-url")
-async def crop_circle_url(
-    image_url: str = Form(...),
-    center_x: int = Form(...),
-    center_y: int = Form(...),
-    radius: int = Form(...),
-    quality: Optional[int] = Form(90),
+@router.post("/api/v1/crop/circle-by-url")
+async def crop_circle_by_url(
+    request: CircleCropByUrlRequest = Body(..., description="圆形裁剪URL请求参数")
 ):
-    """圆形裁剪图片 (通过URL)"""
-    # 验证并创建请求模型
-    crop_request = CropCircleRequest(
-        center_x=center_x, center_y=center_y, radius=radius, quality=quality
-    )
-    
-    return await CropImageHandler.process_crop_url(
-        image_url=image_url,
-        processor_func=ImageService.crop_circle,
-        media_type_override="image/png",  # 圆形裁剪返回PNG格式（支持透明背景）
-        center_x=crop_request.center_x,
-        center_y=crop_request.center_y,
-        radius=crop_request.radius,
-        quality=crop_request.quality,
-    )
+    """圆形裁剪URL图片"""
+    try:
+        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        result = ImageService.crop_circle(
+            image_bytes=contents,
+            center_x=request.center_x,
+            center_y=request.center_y,
+            radius=request.radius,
+            quality=request.quality
+        )
 
+        # 将图片转换为base64编码返回
+        result_base64 = base64.b64encode(result).decode('utf-8')
 
-@router.post("/polygon")
-async def crop_polygon(
-    file: UploadFile = File(...),
-    points: str = Form(...),  # JSON字符串格式的坐标点
-    quality: Optional[int] = Form(90),
-):
-    """
-    多边形裁剪图片
-    points格式: "[[x1,y1],[x2,y2],[x3,y3],...]"
-    """
-    # 解析坐标点
-    points_tuples = CropImageHandler.parse_points(points)
-    
-    # 验证并创建请求模型
-    crop_request = CropPolygonRequest(
-        points=points_tuples, quality=quality
-    )
-    
-    return await CropImageHandler.process_crop_upload(
-        file=file,
-        processor_func=ImageService.crop_polygon,
-        media_type_override="image/png",  # 多边形裁剪返回PNG格式（支持透明背景）
-        points=crop_request.points,
-        quality=crop_request.quality,
-    )
+        return ApiResponse.success(
+            message="URL图片圆形裁剪成功",
+            data={
+                "image_data": result_base64,
+                "content_type": "image/png",  # 圆形裁剪返回PNG格式（支持透明背景）
+                "processing_info": {
+                    "center_x": request.center_x,
+                    "center_y": request.center_y,
+                    "radius": request.radius,
+                    "quality": request.quality,
+                    "source_url": request.image_url
+                }
+            }
+        )
+    except Exception as e:
+        return ApiResponse.error(
+            message=f"圆形裁剪失败: {str(e)}",
+            code=500
+        )
 
-
-@router.post("/polygon-url")
-async def crop_polygon_url(
-    image_url: str = Form(...),
-    points: str = Form(...),  # JSON字符串格式的坐标点
-    quality: Optional[int] = Form(90),
-):
-    """
-    多边形裁剪图片 (通过URL)
-    points格式: "[[x1,y1],[x2,y2],[x3,y3],...]"
-    """
-    # 解析坐标点
-    points_tuples = CropImageHandler.parse_points(points)
-    
-    # 验证并创建请求模型
-    crop_request = CropPolygonRequest(
-        points=points_tuples, quality=quality
-    )
-    
-    return await CropImageHandler.process_crop_url(
-        image_url=image_url,
-        processor_func=ImageService.crop_polygon,
-        media_type_override="image/png",  # 多边形裁剪返回PNG格式（支持透明背景）
-        points=crop_request.points,
-        quality=crop_request.quality,
-    ) 

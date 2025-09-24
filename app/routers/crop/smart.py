@@ -18,8 +18,8 @@ router = APIRouter(
     responses={404: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
 )
 
-@router.post("/api/v1/crop/smart-center")
-async def crop_smart_center(
+@router.post("/api/v1/crop/smart")
+async def crop_smart(
     file: UploadFile = File(...),
     target_width: int = Form(...),
     target_height: int = Form(...),
@@ -38,8 +38,8 @@ async def crop_smart_center(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/api/v1/crop/smart-center-by-url")
-async def crop_smart_center_by_url(
+@router.post("/api/v1/crop/smart-by-url")
+async def crop_smart_by_url(
     request: SmartCropByUrlRequest = Body(..., description="智能裁剪URL请求参数")
 ):
     """智能居中裁剪URL图片到指定尺寸"""
