@@ -11,6 +11,7 @@ from app.utils.billing_utils import (
 from app.schemas.response_models import ErrorResponse, ImageProcessResponse, FileInfo, ApiResponse
 from app.schemas.user_models import User
 from app.middleware.auth_middleware import get_current_user, get_current_api_token
+from app.utils.logger import logger
 from .models import WatermarkByUrlRequest
 from typing import Optional
 
@@ -202,11 +203,25 @@ async def add_watermark_by_url(
         )
         
         # 上传处理后的图片
-        file_info = await file_upload_service.upload_processed_image(
-            result_bytes,
-            f"watermark_{ImageUtils.get_filename_from_url(request.image_url)}",
-            current_user.id
+        upload_response = await file_upload_service.upload_processed_image(
+            image_bytes=result_bytes,
+            api_token=current_user.api_token,
+            operation_type="watermark",
+            parameters={
+                "watermark_text": request.watermark_text,
+                "position": request.position,
+                "font_size": request.font_size,
+                "opacity": request.opacity
+            },
+            original_filename=f"watermark_{ImageUtils.get_filename_from_url(request.image_url)}",
+            content_type="image/jpeg"
         )
+
+        if not upload_response:
+            raise HTTPException(
+                status_code=500,
+                detail="文件上传失败：AIGC网盘服务不可用(502错误)，OSS备用上传也失败。请稍后重试或联系管理员。"
+            )
         
         # 计费
         billing_info = calculate_url_download_billing(len(image_content))
@@ -215,14 +230,18 @@ async def add_watermark_by_url(
             operation_type="watermark",
             input_size=len(image_content),
             output_size=len(result_bytes),
-            cost=billing_info["cost"],
-            remark=generate_operation_remark("watermark", {
-                "image_url": request.image_url,
-                "watermark_text": request.watermark_text,
-                "position": request.position
-            })
+            cost=billing_info["total_cost"],
+            remark=generate_operation_remark("watermark", "watermark", billing_info,
+                image_url=request.image_url,
+                watermark_text=request.watermark_text,
+                position=request.position
+            )
         )
         
+        # 构造响应
+        from ...schemas.response_models import FileInfo
+        file_info = FileInfo(**upload_response["file"])
+
         return ApiResponse.success(
             message="水印添加成功",
             data={
@@ -231,66 +250,20 @@ async def add_watermark_by_url(
             }
         )
 
-    except Exception as e:
+    except HTTPException as e:
+        logger.error(f"水印处理HTTP异常: {e.status_code}: {e.detail}")
         return ApiResponse.error(
-            message=f"水印处理失败: {str(e)}",
+            message=f"水印处理失败: {e.detail}",
+            code=e.status_code
+        )
+    except Exception as e:
+        logger.error(f"水印处理异常: {type(e).__name__}: {str(e)}")
+        import traceback
+        logger.error(f"异常堆栈: {traceback.format_exc()}")
+        return ApiResponse.error(
+            message=f"水印处理失败: {type(e).__name__}: {str(e) or '未知错误'}",
             code=500
         )
 
 
-@router.post("/api/v1/watermark-by-url-test")
-async def add_watermark_by_url_test(
-    request: WatermarkByUrlRequest,
-    # 临时禁用认证用于测试
-    # api_token: str = Depends(get_current_api_token)
-):
-    """
-    通过URL为图片添加文字水印（测试接口）
-    
-    Args:
-        request: 水印请求参数
-        api_token: API令牌
-        
-    Returns:
-        处理后的图片响应
-    """
-    try:
-        # 下载图片
-        image_content, content_type = ImageUtils.download_image_from_url(request.image_url)
-        
-        # 验证图片大小 (临时禁用)
-        # if not ImageUtils.is_valid_image_size(image_content):
-        #     raise HTTPException(status_code=400, detail="图片尺寸超出限制")
-        
-        # 处理水印
-        result_bytes = WatermarkService.add_watermark(
-            image_content,
-            request.watermark_text,
-            request.position,
-            request.opacity,
-            request.font_color,
-            request.font_size,
-            request.rotation,
-            request.quality,
-            font_family=request.font_family,
-            margin_x=request.margin_x,
-            margin_y=request.margin_y,
-            stroke_width=request.stroke_width,
-            stroke_color=request.stroke_color,
-            shadow_offset_x=request.shadow_offset_x,
-            shadow_offset_y=request.shadow_offset_y,
-            shadow_color=request.shadow_color,
-            repeat_mode=request.repeat_mode
-        )
-        
-        # 测试接口直接返回处理后的图片
-        return Response(
-            content=result_bytes,
-            media_type="image/jpeg",
-            headers={
-                "Content-Disposition": "attachment; filename=watermarked_image.jpg"
-            }
-        )
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"水印处理失败: {str(e)}")
+

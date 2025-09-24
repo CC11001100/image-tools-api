@@ -3,6 +3,7 @@
  * 原文件已拆分为多个模块，此为主导出文件
  """
 
-# 注意：这是一个简化的重构版本
-# 完整的拆分需要根据具体业务逻辑进行
-from ..stitch_service_backup import *
+# 导出主要的拼接服务
+from ..stitch_service import StitchService
+
+__all__ = ['StitchService']

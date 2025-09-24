@@ -80,4 +80,36 @@ class ImageUtils:
             return True
             
         # 对于没有扩展名的URL（如某些图片服务），返回True让后续下载时验证
-        return True 
+        return True
+
+    @staticmethod
+    def get_filename_from_url(url: str) -> str:
+        """
+        从URL中提取文件名
+
+        Args:
+            url: 图片URL
+
+        Returns:
+            提取的文件名，如果无法提取则返回默认名称
+        """
+        try:
+            # 移除查询参数
+            url_path = url.split('?')[0]
+
+            # 提取文件名
+            filename = url_path.split('/')[-1]
+
+            # 如果没有文件名或文件名为空，返回默认名称
+            if not filename or filename == '':
+                return "image.jpg"
+
+            # 如果文件名没有扩展名，添加默认扩展名
+            if '.' not in filename:
+                filename += ".jpg"
+
+            return filename
+
+        except Exception as e:
+            logger.error(f"从URL提取文件名失败: {e}")
+            return "image.jpg"

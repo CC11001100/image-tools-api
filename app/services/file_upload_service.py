@@ -2,6 +2,7 @@ import uuid
 import os
 from typing import Optional, Dict, Any, Tuple
 from ..services.aigc_storage_client import aigc_storage_client
+from ..services.oss_client import OSSClient
 from ..config import config
 from ..utils.logger import logger
 
@@ -11,6 +12,7 @@ class FileUploadService:
     
     def __init__(self):
         self.storage_client = aigc_storage_client
+        self.oss_client = OSSClient()
         self.default_category_id = config.AIGC_STORAGE_DEFAULT_CATEGORY_ID
         self.default_tags = config.AIGC_STORAGE_DEFAULT_TAGS
     
@@ -163,7 +165,7 @@ class FileUploadService:
             
             logger.info(f"准备上传图片: {filename}, 操作类型: {operation_type}")
             
-            # 上传到网盘
+            # 首先尝试上传到AIGC网盘
             upload_response = await self.storage_client.upload_file(
                 file_bytes=image_bytes,
                 filename=filename,
@@ -173,13 +175,56 @@ class FileUploadService:
                 tags=tags,
                 content_type=content_type
             )
-            
+
             if upload_response:
-                logger.info(f"图片上传成功: {filename}")
+                logger.info(f"AIGC网盘上传成功: {filename}")
                 return upload_response
+
+            # AIGC网盘上传失败，检查是否有OSS配置
+            logger.warning(f"AIGC网盘上传失败，检查OSS备用上传: {filename}")
+
+            # 检查OSS配置
+            if hasattr(self.oss_client, 'access_key_id') and self.oss_client.access_key_id:
+                # 生成OSS对象键
+                oss_object_key = f"processed/{operation_type}/{filename}"
+
+                # 上传到OSS
+                oss_url = self.oss_client.upload_bytes(
+                    file_bytes=image_bytes,
+                    object_key=oss_object_key,
+                    content_type=content_type
+                )
+
+                if oss_url:
+                    logger.info(f"OSS备用上传成功: {filename} -> {oss_url}")
+
+                    # 构造兼容AIGC网盘格式的响应
+                    oss_response = {
+                        "code": 200,
+                        "message": "文件上传成功（OSS备用）",
+                        "file": {
+                            "id": f"oss_{uuid.uuid4().hex}",
+                            "filename": filename,
+                            "original_filename": original_filename or filename,
+                            "file_size": len(image_bytes),
+                            "content_type": content_type,
+                            "file_url": oss_url,
+                            "preview_url": oss_url,
+                            "download_url": oss_url,
+                            "description": description,
+                            "tags": tags,
+                            "upload_source": "oss_backup"
+                        }
+                    }
+                    return oss_response
+                else:
+                    logger.error(f"OSS备用上传也失败: {filename}")
             else:
-                logger.error(f"图片上传失败: {filename}")
-                return None
+                logger.warning("OSS配置未设置，无法使用备用上传")
+
+            # 所有上传方式都失败，返回None
+            logger.error(f"所有上传方式都失败: {filename}")
+            return None
                 
         except Exception as e:
             logger.error(f"上传处理后图片时发生异常: {str(e)}")

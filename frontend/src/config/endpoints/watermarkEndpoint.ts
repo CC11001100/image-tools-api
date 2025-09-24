@@ -3,7 +3,7 @@ import { ApiEndpoint } from '../../types/api';
 export const watermarkEndpoint: ApiEndpoint = {
   method: 'POST',
   path: '/api/v1/watermark',
-  urlPath: '/api/v1/watermark-by-url-test',
+  urlPath: '/api/v1/watermark-by-url',
   description: '添加水印',
   category: 'overlay',
   requestType: {

@@ -1,9 +1,17 @@
 /**
- * AuthTestPage - 向后兼容导出
- * 重新导出重构后的组件以保持向后兼容性
+ * AuthTestPage - 认证测试页面
  */
 
-import { AuthTestPage } from './AuthTestComponents';
+import React from 'react';
+import QuickAuthTest from '../components/QuickAuthTest';
 
-export { AuthTestPage };
+const AuthTestPage: React.FC = () => {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">认证测试</h1>
+      <QuickAuthTest />
+    </div>
+  );
+};
+
 export default AuthTestPage;

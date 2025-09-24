@@ -3,7 +3,7 @@ import { ApiEndpoint } from '../../types/api';
 export const maskEndpoint: ApiEndpoint = {
   method: 'POST',
   path: '/api/v1/mask',
-  urlPath: '/api/v1/mask-by-url-test',
+  urlPath: '/api/v1/mask-by-url',
   description: '为图片应用各种形状的遮罩效果。',
   category: '遮罩效果',
   requestType: {

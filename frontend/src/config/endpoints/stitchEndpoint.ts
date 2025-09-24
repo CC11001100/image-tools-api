@@ -3,7 +3,7 @@ import { ApiEndpoint } from '../../types/api';
 export const stitchEndpoint: ApiEndpoint = {
   method: 'POST',
   path: '/api/stitch',
-  urlPath: '/api/v1/stitch-by-url-test',
+  urlPath: '/api/v1/stitch-by-url',
   description: '图片拼接',
   category: 'transform',
   requestType: {

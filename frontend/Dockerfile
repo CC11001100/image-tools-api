@@ -9,7 +9,7 @@ COPY frontend/build /usr/share/nginx/html
 # 创建nginx配置文件
 COPY <<EOF /etc/nginx/conf.d/default.conf
 server {
-    listen 58889;
+    listen 80;
     server_name localhost;
     root /usr/share/nginx/html;
     index index.html index.htm;
@@ -40,7 +40,7 @@ server {
 EOF
 
 # 暴露端口
-EXPOSE 58889
+EXPOSE 80
 
 # 启动nginx
 CMD ["nginx", "-g", "daemon off;"]

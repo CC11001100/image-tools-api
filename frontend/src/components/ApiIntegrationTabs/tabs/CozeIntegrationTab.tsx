@@ -20,6 +20,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { ApiEndpoint } from '../../../types/api';
 import { CodeBlock } from '../../CodeBlock';
+import { API_BASE_URL } from '../../../config/constants';
 
 interface CozeIntegrationTabProps {
   endpoint: ApiEndpoint;
@@ -44,7 +45,7 @@ export const CozeIntegrationTab: React.FC<CozeIntegrationTabProps> = ({
   },
   "servers": [
     {
-      "url": "http://localhost:58888",
+      "url": "${API_BASE_URL}",
       "description": "本地开发服务器"
     }
   ],

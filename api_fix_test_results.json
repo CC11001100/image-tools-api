@@ -1,0 +1,91 @@
+{
+  "正式接口检查": [
+    {
+      "endpoint": "/api/v1/watermark-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    },
+    {
+      "endpoint": "/api/v1/resize-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    },
+    {
+      "endpoint": "/api/v1/crop-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    },
+    {
+      "endpoint": "/api/v1/stitch-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    },
+    {
+      "endpoint": "/api/v1/blend-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    },
+    {
+      "endpoint": "/api/v1/text-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    },
+    {
+      "endpoint": "/api/v1/mask-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    },
+    {
+      "endpoint": "/api/v1/annotation-by-url",
+      "exists": true,
+      "result": "✅ 正常 - 接口正常 (需要认证)"
+    }
+  ],
+  "测试接口检查": [
+    {
+      "endpoint": "/api/v1/watermark-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    },
+    {
+      "endpoint": "/api/v1/resize-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    },
+    {
+      "endpoint": "/api/v1/crop-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    },
+    {
+      "endpoint": "/api/v1/stitch-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    },
+    {
+      "endpoint": "/api/v1/blend-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    },
+    {
+      "endpoint": "/api/v1/text-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    },
+    {
+      "endpoint": "/api/v1/mask-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    },
+    {
+      "endpoint": "/api/v1/annotation-by-url-test",
+      "exists": false,
+      "result": "✅ 已删除 - 接口不存在"
+    }
+  ],
+  "总结": {
+    "正式接口": "8/8",
+    "测试接口删除": "8/8",
+    "修复成功": true
+  }
+}

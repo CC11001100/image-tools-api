@@ -127,10 +127,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
     
     def _extract_api_token(self, authorization: str) -> Optional[str]:
         """从Authorization头中提取API token"""
-        # 移除可能的"Bearer "前缀
-        if authorization.startswith("Bearer "):
-            return authorization[7:]
-        return authorization
+        if not authorization:
+            return None
+
+        # 移除可能的"Bearer "前缀（不区分大小写）
+        if authorization.lower().startswith("bearer "):
+            return authorization[7:].strip()
+
+        # 直接返回token（兼容不带Bearer前缀的情况）
+        return authorization.strip()
 
 
 def get_current_user(request: Request) -> User:

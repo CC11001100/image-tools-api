@@ -3,7 +3,7 @@ import { ApiEndpoint } from '../../types/api';
 export const annotationEndpoint: ApiEndpoint = {
   method: 'POST',
   path: '/api/v1/annotation',
-  urlPath: '/api/v1/annotation-by-url-test',
+  urlPath: '/api/v1/annotation-by-url',
   description: '在图片上添加各种标注元素，支持矩形、圆形、箭头、文字等多种标注类型。',
   category: '图片标注',
   requestType: {

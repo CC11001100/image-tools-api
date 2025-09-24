@@ -17,6 +17,7 @@ import CodeIcon from '@mui/icons-material/Code';
 import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
 import { ApiEndpoint } from '../../../types/api';
 import { CodeBlock } from '../../CodeBlock';
+import { API_BASE_URL } from '../../../config/constants';
 
 interface McpIntegrationTabProps {
   endpoint: ApiEndpoint;
@@ -39,7 +40,7 @@ export const McpIntegrationTab: React.FC<McpIntegrationTabProps> = ({
       "command": "node",
       "args": ["mcp-server.js"],
       "env": {
-        "API_BASE_URL": "http://localhost:58888",
+        "API_BASE_URL": "${API_BASE_URL}",
         "ENDPOINT_PATH": "${endpoint.path}",
         "ENDPOINT_URL_PATH": "${endpoint.urlPath}"
       }

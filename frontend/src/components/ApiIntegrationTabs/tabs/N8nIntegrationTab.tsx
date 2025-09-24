@@ -22,6 +22,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import LinkIcon from '@mui/icons-material/Link';
 import { ApiEndpoint } from '../../../types/api';
 import { CodeBlock } from '../../CodeBlock';
+import { API_BASE_URL } from '../../../config/constants';
 
 interface N8nIntegrationTabProps {
   endpoint: ApiEndpoint;
@@ -39,7 +40,7 @@ export const N8nIntegrationTab: React.FC<N8nIntegrationTabProps> = ({
 
   const httpNodeConfig = `{
   "method": "POST",
-  "url": "http://localhost:58888${endpoint.path}",
+  "url": "${API_BASE_URL}${endpoint.path}",
   "sendHeaders": true,
   "headerParameters": {
     "parameters": [
@@ -76,7 +77,7 @@ export const N8nIntegrationTab: React.FC<N8nIntegrationTabProps> = ({
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:58888${endpoint.path}",
+        "url": "${API_BASE_URL}${endpoint.path}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

@@ -3,7 +3,7 @@ import { ApiEndpoint } from '../../types/api';
 export const advancedTextEndpoint: ApiEndpoint = {
   method: 'POST',
   path: '/api/v1/text',
-  urlPath: '/api/v1/text-by-url-test',
+  urlPath: '/api/v1/text-by-url',
   description: '高级文字效果处理',
   category: 'text',
   requestType: {

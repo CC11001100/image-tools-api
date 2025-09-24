@@ -3,7 +3,7 @@ import { ApiEndpoint } from '../../types/api';
 export const cropEndpoint: ApiEndpoint = {
   method: 'POST',
   path: '/api/v1/crop',
-  urlPath: '/api/v1/crop-by-url-test',
+  urlPath: '/api/v1/crop-by-url',
   description: '裁剪图片',
   category: 'transform',
   requestType: {
