@@ -51,7 +51,7 @@ async def flip_horizontal_by_url(
 ):
     """水平翻转URL图片"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = ImageService.flip_horizontal(
             image_bytes=contents,
             quality=request.quality,
@@ -108,7 +108,7 @@ async def flip_vertical_by_url(
 ):
     """垂直翻转URL图片"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = ImageService.flip_vertical(
             image_bytes=contents,
             quality=request.quality,

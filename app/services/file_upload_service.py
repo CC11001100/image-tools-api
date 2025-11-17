@@ -165,6 +165,7 @@ class FileUploadService:
             
             logger.info(f"准备上传图片: {filename}, 操作类型: {operation_type}")
             
+
             # 首先尝试上传到AIGC网盘
             upload_response = await self.storage_client.upload_file(
                 file_bytes=image_bytes,

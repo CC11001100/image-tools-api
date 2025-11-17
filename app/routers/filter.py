@@ -1,3 +1,5 @@
+import time
+import random
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Body, Depends
 from fastapi.responses import Response
 from ..services.image_service import ImageService
@@ -121,9 +123,8 @@ async def apply_filter(
     file: UploadFile = File(...),
     filter_type: str = Form(...),
     intensity: Optional[float] = Form(1.0),
-    # 临时禁用认证用于示例生成
-    # current_user: User = Depends(get_current_user),
-    # api_token: str = Depends(get_current_api_token)
+    current_user: User = Depends(get_current_user),
+    api_token: str = Depends(get_current_api_token)
 ):
     """
     对上传图片应用滤镜效果
@@ -131,9 +132,6 @@ async def apply_filter(
     """
     api_path = "/api/v1/filter"
     call_id = None
-
-    # 临时使用固定的API Token用于示例生成
-    api_token = "aigc-hub-1f9562c6a18247aa82050bb78ffc479c"
 
     try:
         if not file.content_type or not file.content_type.startswith("image/"):
@@ -158,8 +156,8 @@ async def apply_filter(
 
         result_size = len(result_bytes)
 
-        # 计算预估费用（基础费用 + 上传费用）
-        billing_info = calculate_upload_only_billing(original_size, result_size)
+        # 计算预估费用
+        billing_info = calculate_upload_only_billing(upload_size_bytes=result_size)
         estimated_tokens = billing_info["total_cost"]
 
         # 准备请求上下文
@@ -168,51 +166,40 @@ async def apply_filter(
             "intensity": intensity,
             "original_filename": file.filename,
             "original_size": original_size,
-            "result_size": result_size
+            "result_size": result_size,
+            "billing_breakdown": billing_info["breakdown"]
         }
 
-        # 生成详细备注
-        remark = generate_operation_remark(
-            api_path, f"滤镜处理({filter_type})", billing_info,
-            文件名=file.filename, 滤镜类型=filter_type, 强度=intensity
+        # 预扣费
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path=api_path,
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=f"滤镜处理 - {file.filename}"
         )
 
-        # 临时禁用计费用于示例生成
-        # call_id = await billing_service.pre_charge(
-        #     api_token=api_token,
-        #     api_path=api_path,
-        #     context=context,
-        #     estimated_tokens=estimated_tokens,
-        #     remark=remark
-        # )
-        call_id = None
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
 
-        # 临时禁用call_id检查用于示例生成
-        # if not call_id:
-        #     raise HTTPException(
-        #         status_code=402,
-        #         detail="余额不足或预扣费失败，请检查账户余额"
-        #     )
-
-        # 临时禁用上传到网盘用于示例生成
-        # upload_response = await file_upload_service.upload_processed_image(
-        #     image_bytes=result_bytes,
-        #     api_token=api_token,
-        #     operation_type="filter",
-        #     parameters=context,
-        #     original_filename=file.filename,
-        #     content_type=file.content_type or "image/jpeg"
-        # )
-
-        # if not upload_response:
-        #     raise HTTPException(status_code=500, detail="文件上传到网盘失败")
+        # 准备上传参数
+        parameters = {
+            "filter_type": filter_type,
+            "intensity": intensity,
+            "original_filename": file.filename,
+            "original_size": len(contents),
+            "result_size": len(result_bytes)
+        }
 
         # 上传到网盘
         upload_response = await file_upload_service.upload_processed_image(
             image_bytes=result_bytes,
             api_token=api_token,
             operation_type="filter",
-            parameters=context,
+            parameters=parameters,
             original_filename=file.filename,
             content_type=file.content_type or "image/jpeg"
         )
@@ -227,19 +214,24 @@ async def apply_filter(
             message="滤镜处理并上传成功",
             data={
                 "file_info": file_info.dict(),
-                "processing_info": context
+                "processing_info": {
+                    **parameters,
+                    "billing_info": billing_info,
+                    "call_id": call_id,
+                    "tokens_consumed": estimated_tokens
+                }
             }
         )
 
     except HTTPException:
-        # HTTP异常直接抛出，临时禁用退费
-        # if call_id:
-        #     await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        # HTTP异常直接抛出，但需要退费
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
         raise
     except Exception as e:
-        # 4. 业务逻辑执行失败，临时禁用退费
-        # if call_id:
-        #     await billing_service.refund_all(call_id, f"滤镜处理失败: {str(e)}")
+        # 4. 业务逻辑执行失败，返还Token
+        if call_id:
+            await billing_service.refund_all(call_id, f"滤镜处理失败: {str(e)}")
         return ApiResponse.error(
             message=f"滤镜处理失败: {str(e)}",
             code=500
@@ -249,14 +241,15 @@ async def apply_filter(
 
 @router.post("/api/v1/filter-by-url")
 async def apply_filter_by_url(
-    request: FilterByUrlRequest = Body(..., description="滤镜URL请求参数")
+    request: FilterByUrlRequest = Body(..., description="滤镜URL请求参数"),
+    current_user: User = Depends(get_current_user),
+    api_token: str = Depends(get_current_api_token)
 ):
     """
     对URL图片应用滤镜效果并上传到AIGC网盘
     """
-    # 临时使用固定的API Token用于示例生成
-    api_token = "aigc-hub-1f9562c6a18247aa82050bb78ffc479c"
-
+    api_path = "/api/v1/filter-by-url"
+    call_id = None
     try:
         # 处理相对路径，转换为完整URL
         if request.image_url.startswith('/'):
@@ -271,7 +264,7 @@ async def apply_filter_by_url(
                 raise HTTPException(status_code=404, detail=f"本地文件不存在: {file_path}")
         else:
             # 完整URL，下载图片
-            contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+            contents, content_type = ImageUtils.download_image_from_url(request.image_url)
 
         try:
             filter_enum = FilterType(request.filter_type)
@@ -284,6 +277,41 @@ async def apply_filter_by_url(
             filter_type=filter_enum.value,
             intensity=request.intensity,
         )
+
+        original_size = len(contents)
+        result_size = len(result_bytes)
+
+        # 计算预估费用
+        billing_info = calculate_url_download_billing(
+            download_size_bytes=original_size,
+            upload_size_bytes=result_size
+        )
+        estimated_tokens = billing_info["total_cost"]
+
+        # 准备请求上下文
+        context = {
+            "filter_type": request.filter_type,
+            "intensity": request.intensity,
+            "source_url": request.image_url,
+            "original_size": original_size,
+            "result_size": result_size,
+            "billing_breakdown": billing_info["breakdown"]
+        }
+
+        # 预扣费
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path=api_path,
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=f"滤镜处理URL - {request.image_url}"
+        )
+
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
 
         # 准备上传参数
         parameters = {
@@ -312,13 +340,22 @@ async def apply_filter_by_url(
             message="滤镜处理并上传成功",
             data={
                 "file_info": file_info.dict(),
-                "processing_info": parameters
+                "processing_info": {
+                    **parameters,
+                    "billing_info": billing_info,
+                    "call_id": call_id,
+                    "tokens_consumed": estimated_tokens
+                }
             }
         )
     except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
         raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"滤镜处理失败: {str(e)}")
         return ApiResponse.error(
-            message=str(e),
+            message=f"滤镜处理失败: {str(e)}",
             code=500
         )

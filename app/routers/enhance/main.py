@@ -59,22 +59,8 @@ async def enhance_image(
         )
 
         if not upload_response:
-            # 网盘上传失败时，创建一个模拟的响应用于测试
-            from datetime import datetime
-            import uuid
-            upload_response = {
-                "file": {
-                    "id": 0,
-                    "filename": f"enhance_{uuid.uuid4().hex[:8]}.jpg",
-                    "original_name": f"enhance_{uuid.uuid4().hex[:8]}.jpg",
-                    "file_size": len(result_bytes),
-                    "file_type": "image/jpeg",
-                    "url": "data:image/jpeg;base64,processed",
-                    "preview_url": "data:image/jpeg;base64,processed",
-                    "description": "图片增强处理完成，网盘上传跳过",
-                    "upload_time": datetime.now().isoformat()
-                }
-            }
+            logger.error("文件上传失败")
+            raise HTTPException(status_code=500, detail="文件上传失败")
 
         # 构造响应
         file_info = FileInfo(**upload_response["file"])
@@ -101,7 +87,7 @@ async def enhance_image_by_url(
     增强URL图片并上传到AIGC网盘
     """
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result_bytes = EnhanceService.apply_enhance_effect(
             image_bytes=contents,
             effect_type=request.enhance_type,

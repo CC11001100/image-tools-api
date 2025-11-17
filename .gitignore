@@ -652,7 +652,8 @@ final_*.py
 
 # Shell scripts (root level)
 *.sh
-!deploy.sh  # Keep main deploy script
+!deploy.sh  # Keep main deploy script if needed
+# Note: deploy-prod.sh and k8s/deploy.sh are ignored for security
 
 # Markdown reports (root level)
 图片OSS迁移完成报告.md
@@ -765,3 +766,11 @@ tmp_*
 processing_*
 *_temp.*
 *_tmp.*
+
+# ===== K8S DEPLOYMENT ADDITIONS =====
+# K8s deployment scripts with sensitive information
+deploy-prod.sh
+k8s/deploy.sh
+
+# K8s configuration files are tracked but sensitive data should be in secrets
+# k8s/*.yml  # Uncomment this if you want to ignore all k8s configs

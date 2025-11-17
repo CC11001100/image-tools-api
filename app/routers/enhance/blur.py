@@ -69,7 +69,7 @@ async def motion_blur_by_url(
 ):
     """运动模糊效果（URL方式）"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = EnhanceService.motion_blur(
             image_bytes=contents,
             angle=request.angle,
@@ -128,7 +128,7 @@ async def radial_blur_by_url(
 ):
     """径向模糊效果（URL方式）"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = EnhanceService.radial_blur(
             image_bytes=contents,
             center_x=request.center_x,
@@ -186,7 +186,7 @@ async def surface_blur_by_url(
 ):
     """表面模糊（保留边缘）（URL方式）"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = EnhanceService.surface_blur(
             image_bytes=contents,
             radius=request.radius,

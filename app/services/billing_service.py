@@ -48,11 +48,7 @@ class BillingService:
         if estimated_tokens is None:
             estimated_tokens = self.default_token_cost
 
-        # 开发模式：直接返回模拟的call_id
-        if config.DEVELOPMENT_MODE:
-            mock_call_id = f"dev_call_{uuid.uuid4().hex[:8]}"
-            logger.info(f"开发模式：模拟预扣费成功 {mock_call_id}, 预估tokens: {estimated_tokens}")
-            return mock_call_id
+
 
         request_id = self.generate_request_id()
 
@@ -94,10 +90,7 @@ class BillingService:
         Returns:
             是否成功
         """
-        # 开发模式：直接返回成功
-        if config.DEVELOPMENT_MODE:
-            logger.info(f"开发模式：模拟退费成功 {call_id}")
-            return True
+
 
         request = ActualChargeRequest(
             call_id=call_id,
@@ -137,10 +130,7 @@ class BillingService:
         Returns:
             是否成功（追加扣费失败也返回True，因为已经预扣费过了）
         """
-        # 开发模式：直接返回成功
-        if config.DEVELOPMENT_MODE:
-            logger.info(f"开发模式：模拟追加扣费成功 {call_id}, 追加: {additional_tokens} tokens")
-            return True
+
 
         request = ActualChargeRequest(
             call_id=call_id,
@@ -165,6 +155,52 @@ class BillingService:
             logger.warning(f"追加扣费异常，但继续执行: {str(e)}")
             return True
 
+    async def confirm_charge(self, call_id: str, api_token: str) -> bool:
+        """
+        确认扣费 - 完成预扣费流程
+
+        Args:
+            call_id: 调用ID
+            api_token: API token
+
+        Returns:
+            是否成功
+        """
+        request = ActualChargeRequest(
+            call_id=call_id,
+            operation_type=BillingOperationType.CONFIRM,
+            remark="操作完成，确认扣费"
+        )
+
+        try:
+            response = await user_center_client.actual_charge(request)
+
+            if response and response.code == 200:
+                logger.info(f"确认扣费成功: {call_id}")
+                return True
+            else:
+                error_msg = response.message if response else "确认扣费请求失败"
+                logger.error(f"确认扣费失败: {error_msg}")
+                return False
+
+        except Exception as e:
+            logger.error(f"确认扣费异常: {str(e)}")
+            return False
+
+    async def refund(self, call_id: str, api_token: str, remark: str = "API调用失败，返还Token") -> bool:
+        """
+        退费 - 兼容性方法
+
+        Args:
+            call_id: 调用ID
+            api_token: API token
+            remark: 备注
+
+        Returns:
+            是否成功
+        """
+        return await self.refund_all(call_id, remark)
+
     async def record_billing(
         self,
         user_id: int,
@@ -188,10 +224,7 @@ class BillingService:
         Returns:
             是否成功
         """
-        # 开发模式：直接返回成功
-        if config.DEVELOPMENT_MODE:
-            logger.info(f"开发模式：模拟计费记录成功 - 用户:{user_id}, 操作:{operation_type}, 费用:{cost}")
-            return True
+
 
         # 生产模式：这里可以实现实际的计费记录逻辑
         # 目前暂时返回成功，避免阻塞业务流程

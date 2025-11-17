@@ -1,18 +1,18 @@
 import React from 'react';
 import { ImageToolTabLayout } from '../components/ImageToolTabLayout';
-import GifSettingsComponent from '../components/settings/GifSettingsComponent';
-import { gifExamples } from '../config/examples/gifExamples';
-import { gifEndpoint } from '../config/endpoints';
+import GifOptimizeSettingsComponent from '../components/settings/GifOptimizeSettingsComponent';
+import { gifOptimizeExamples } from '../config/examples/gifOptimizeExamples';
+import { gifOptimizeEndpoint } from '../config/endpoints';
 
 const GifPage: React.FC = () => {
   return (
     <ImageToolTabLayout
-      title="GIF处理"
-      description="GIF图片处理功能，支持调整帧率、尺寸、压缩等。可以优化GIF大小、调整播放速度、提取帧等。"
-      endpoint={gifEndpoint}
-      settingsComponent={GifSettingsComponent}
-      effectExamples={gifExamples}
-      downloadFileName="processed.gif"
+      title="GIF优化压缩"
+      description="GIF文件优化功能，支持压缩文件大小、调整颜色数量、缩放尺寸、优化帧率等。让你的GIF文件更小更流畅。"
+      endpoint={gifOptimizeEndpoint}
+      settingsComponent={GifOptimizeSettingsComponent}
+      effectExamples={gifOptimizeExamples}
+      downloadFileName="optimized.gif"
     />
   );
 };

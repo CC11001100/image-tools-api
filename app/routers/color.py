@@ -2,9 +2,12 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Body, Depe
 from fastapi.responses import Response
 from ..services.color_service import ColorService
 from ..services.file_upload_service import file_upload_service
+from ..services.billing_service import billing_service, BillingCallType
 from ..utils.image_utils import ImageUtils
+from ..utils.billing_utils import calculate_url_download_billing, generate_operation_remark
 from ..schemas.response_models import ErrorResponse, ApiResponse, ImageProcessResponse, FileInfo
-from ..middleware.auth_middleware import get_current_api_token
+from ..schemas.user_models import User
+from ..middleware.auth_middleware import get_current_user, get_current_api_token
 from typing import Optional
 from pydantic import BaseModel
 
@@ -52,12 +55,26 @@ async def adjust_color(
     adjustment_type: str = Form(...),
     intensity: Optional[float] = Form(1.0),
     quality: Optional[int] = Form(90),
+    current_user: User = Depends(get_current_user),
     api_token: str = Depends(get_current_api_token)
 ):
     """
     调整上传图片的颜色并上传到AIGC网盘
     """
+    call_id = None
     try:
+        # 预扣费
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/color",
+            context={
+                "adjustment_type": adjustment_type,
+                "intensity": intensity,
+                "quality": quality
+            },
+            estimated_tokens=10,
+            remark="颜色调整处理"
+        )
         contents = await file.read()
         # 根据adjustment_type调用相应的方法
         if adjustment_type == "brightness":
@@ -110,28 +127,59 @@ async def adjust_color(
         # 构造响应
         file_info = FileInfo(**upload_response["file"])
 
+        # 确认扣费
+        await billing_service.confirm_charge(call_id, api_token)
+        
+        billing_info = {
+            "call_id": call_id,
+            "estimated_tokens": 10,
+            "status": "completed"
+        }
+
         return ApiResponse.success(
             message="颜色调整处理并上传成功",
             data={
                 "file_info": file_info.dict(),
-                "processing_info": parameters
+                "processing_info": parameters,
+                "billing_info": billing_info
             }
         )
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"颜色调整失败: {str(e)}")
         return ApiResponse.error(
-            message=str(e),
+            message=f"颜色调整失败: {str(e)}",
             code=500
         )
 
 @router.post("/api/v1/color-by-url")
 async def adjust_color_by_url(
     request: ColorByUrlRequest = Body(..., description="颜色调整URL请求参数"),
+    current_user: User = Depends(get_current_user),
     api_token: str = Depends(get_current_api_token)
 ):
     """
     调整URL图片的颜色并上传到AIGC网盘
     """
+    call_id = None
     try:
+        # 预扣费
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/color-by-url",
+            context={
+                "image_url": request.image_url,
+                "adjustment_type": request.adjustment_type,
+                "intensity": request.intensity,
+                "quality": request.quality
+            },
+            estimated_tokens=10,
+            remark="URL图片颜色调整处理"
+        )
         # 处理相对路径，转换为完整URL
         if request.image_url.startswith('/'):
             # 相对路径，转换为本地文件路径
@@ -145,7 +193,10 @@ async def adjust_color_by_url(
                 raise HTTPException(status_code=404, detail=f"本地文件不存在: {file_path}")
         else:
             # 完整URL，下载图片
-            contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+            contents, content_type = ImageUtils.download_image_from_url(request.image_url)
+
+        # 获取原始图片大小
+        original_size = len(contents)
 
         # 根据adjustment_type调用相应的方法
         if request.adjustment_type == "brightness":
@@ -180,6 +231,9 @@ async def adjust_color_by_url(
                 intensity=request.intensity,
                 quality=request.quality,
             )
+
+        # 获取处理后图片大小
+        result_size = len(result_bytes)
 
         # 准备上传参数
         parameters = {
@@ -219,16 +273,31 @@ async def adjust_color_by_url(
         # 构造响应
         file_info = FileInfo(**upload_response["file"])
 
+        # 确认扣费
+        await billing_service.confirm_charge(call_id, api_token)
+        
+        billing_info = {
+            "call_id": call_id,
+            "estimated_tokens": 10,
+            "status": "completed"
+        }
+
         return ApiResponse.success(
             message="URL图片颜色调整处理并上传成功",
             data={
                 "file": file_info.dict(),
-                "processing_info": parameters
-        
+                "processing_info": parameters,
+                "billing_info": billing_info
             }
         )
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"颜色调整失败: {str(e)}")
         return ApiResponse.error(
-            message=str(e),
+            message=f"颜色调整失败: {str(e)}",
             code=500
         )

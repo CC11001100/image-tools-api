@@ -73,9 +73,9 @@ function App() {
               <Route path="/text" element={<TextPage />} />
               <Route path="/annotation" element={<AnnotationPage />} />
 
-              <Route path="/gif" element={<GifPage />} />
-              <Route path="/create-gif" element={<ImageToGifPage />} />
-              <Route path="/extract-gif" element={<GifExtractPage />} />
+              <Route path="/gif-extract" element={<GifExtractPage />} />
+              <Route path="/gif-create" element={<ImageToGifPage />} />
+              <Route path="/gif-optimize" element={<GifPage />} />
               <Route path="/api-docs" element={<ApiDocs />} />
               <Route path="/auth-test" element={<AuthTestPage />} />
             </Routes>

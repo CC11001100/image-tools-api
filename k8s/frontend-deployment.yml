@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-tools-frontend
+  namespace: aigchub-prod
+  labels:
+    app: image-tools-frontend
+    component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-tools-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: image-tools-frontend
+        component: frontend
+    spec:
+      # 使用 Harbor 镜像仓库的认证
+      imagePullSecrets:
+        - name: harbor-secret
+      
+      containers:
+        - name: frontend
+          image: docker.zhaixingren.cn/aigchub/image-tools-frontend:latest
+          imagePullPolicy: IfNotPresent
+          
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+          
+          # 健康检查
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          # 资源限制 - 前端nginx资源占用很少
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+      
+      # 重启策略
+      restartPolicy: Always

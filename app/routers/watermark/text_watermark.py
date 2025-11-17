@@ -37,8 +37,8 @@ async def add_watermark(
     shadow_color: str = Form("#000000"),
     repeat_mode: str = Form("none"),
     quality: int = Form(90),
-    # 临时禁用认证用于示例生成
-    # current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    api_token: str = Depends(get_current_api_token)
 ):
     """
     为图片添加文字水印并上传到AIGC网盘
@@ -56,20 +56,50 @@ async def add_watermark(
     Returns:
         处理后的图片响应
     """
-    # 临时使用固定的API Token用于示例生成
-    api_token = "aigc-hub-1f9562c6a18247aa82050bb78ffc479c"
 
+    call_id = None
     try:
-        # 临时禁用验证用于示例生成
-        # if not ImageUtils.is_valid_image_format(image.filename):
-        #     raise HTTPException(status_code=400, detail="不支持的图片格式")
-
         # 读取图片内容
         image_content = await image.read()
 
-        # 临时禁用大小验证用于示例生成
-        # if not ImageUtils.is_valid_image_size(image_content):
-        #     raise HTTPException(status_code=400, detail="图片尺寸超出限制")
+        # 计算预估费用
+        billing_info = calculate_upload_only_billing(len(image_content))
+        estimated_tokens = billing_info["total_cost"]
+        
+        # 准备请求上下文
+        context = {
+            "watermark_text": watermark_text,
+            "position": position,
+            "font_size": font_size,
+            "font_color": font_color,
+            "font_family": font_family,
+            "opacity": opacity,
+            "repeat_mode": repeat_mode,
+            "filename": image.filename
+        }
+        
+        # 生成详细备注
+        remark = generate_operation_remark(
+            "/api/v1/watermark", f"文字水印({watermark_text[:10]}...)", billing_info,
+            水印文字=watermark_text[:20] + "..." if len(watermark_text) > 20 else watermark_text,
+            位置=position,
+            文件名=image.filename
+        )
+        
+        # 预扣费 - 先付费再服务
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/watermark",
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=remark
+        )
+        
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
 
         # 处理水印
         result_bytes = WatermarkService.add_watermark(
@@ -123,22 +153,8 @@ async def add_watermark(
         )
 
         if not upload_response:
-            # 网盘上传失败时，创建一个模拟的响应用于测试
-            from datetime import datetime
-            import uuid
-            upload_response = {
-                "file": {
-                    "id": 0,
-                    "filename": f"watermark_{uuid.uuid4().hex[:8]}.jpg",
-                    "original_name": f"watermark_{uuid.uuid4().hex[:8]}.jpg",
-                    "file_size": len(result_bytes),
-                    "file_type": "image/jpeg",
-                    "url": "data:image/jpeg;base64,processed",
-                    "preview_url": "data:image/jpeg;base64,processed",
-                    "description": "文字水印处理完成，网盘上传跳过",
-                    "upload_time": datetime.now().isoformat()
-                }
-            }
+            logger.error("文件上传失败")
+            raise HTTPException(status_code=500, detail="文件上传失败")
 
         # 构造响应
         file_info = FileInfo(**upload_response["file"])
@@ -147,13 +163,23 @@ async def add_watermark(
             message="文字水印处理并上传成功",
             data={
                 "file_info": file_info.dict(),
-                "processing_info": parameters
+                "processing_info": parameters,
+                "billing_info": billing_info
             }
         )
 
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"文字水印处理失败: {str(e)}")
+        logger.error(f"文字水印处理异常: {type(e).__name__}: {str(e)}")
+        import traceback
+        logger.error(f"异常堆栈: {traceback.format_exc()}")
         return ApiResponse.error(
-            message=f"水印处理失败: {str(e)}",
+            message=f"水印处理失败: {type(e).__name__}: {str(e) or '未知错误'}",
             code=500
         )
 
@@ -161,7 +187,8 @@ async def add_watermark(
 @router.post("/api/v1/watermark-by-url")
 async def add_watermark_by_url(
     request: WatermarkByUrlRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    api_token: str = Depends(get_current_api_token)
 ):
     """
     通过URL为图片添加文字水印
@@ -173,6 +200,7 @@ async def add_watermark_by_url(
     Returns:
         处理后的图片响应
     """
+    call_id = None
     try:
         # 下载图片
         image_content, content_type = ImageUtils.download_image_from_url(request.image_url)
@@ -180,6 +208,42 @@ async def add_watermark_by_url(
         # 验证图片大小 (临时禁用)
         # if not ImageUtils.is_valid_image_size(image_content):
         #     raise HTTPException(status_code=400, detail="图片尺寸超出限制")
+        
+        # 计算预估费用
+        billing_info = calculate_url_download_billing(len(image_content))
+        estimated_tokens = billing_info["total_cost"]
+        
+        # 准备请求上下文
+        context = {
+            "image_url": request.image_url,
+            "watermark_text": request.watermark_text,
+            "position": request.position,
+            "font_size": request.font_size,
+            "opacity": request.opacity
+        }
+        
+        # 生成详细备注
+        remark = generate_operation_remark(
+            "/api/v1/watermark/text", f"文字水印({request.watermark_text})", billing_info,
+            图片URL=request.image_url,
+            水印文字=request.watermark_text,
+            位置=request.position
+        )
+        
+        # 预扣费 - 先付费再服务
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/watermark/text",
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=remark
+        )
+        
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
         
         # 处理水印
         result_bytes = WatermarkService.add_watermark(
@@ -205,7 +269,7 @@ async def add_watermark_by_url(
         # 上传处理后的图片
         upload_response = await file_upload_service.upload_processed_image(
             image_bytes=result_bytes,
-            api_token=current_user.api_token,
+            api_token=api_token,
             operation_type="watermark",
             parameters={
                 "watermark_text": request.watermark_text,
@@ -223,21 +287,6 @@ async def add_watermark_by_url(
                 detail="文件上传失败：AIGC网盘服务不可用(502错误)，OSS备用上传也失败。请稍后重试或联系管理员。"
             )
         
-        # 计费
-        billing_info = calculate_url_download_billing(len(image_content))
-        await billing_service.record_billing(
-            user_id=current_user.id,
-            operation_type="watermark",
-            input_size=len(image_content),
-            output_size=len(result_bytes),
-            cost=billing_info["total_cost"],
-            remark=generate_operation_remark("watermark", "watermark", billing_info,
-                image_url=request.image_url,
-                watermark_text=request.watermark_text,
-                position=request.position
-            )
-        )
-        
         # 构造响应
         from ...schemas.response_models import FileInfo
         file_info = FileInfo(**upload_response["file"])
@@ -250,16 +299,14 @@ async def add_watermark_by_url(
             }
         )
 
-    except HTTPException as e:
-        logger.error(f"水印处理HTTP异常: {e.status_code}: {e.detail}")
-        return ApiResponse.error(
-            message=f"水印处理失败: {e.detail}",
-            code=e.status_code
-        )
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"文字水印处理失败: {str(e)}")
         logger.error(f"水印处理异常: {type(e).__name__}: {str(e)}")
-        import traceback
-        logger.error(f"异常堆栈: {traceback.format_exc()}")
         return ApiResponse.error(
             message=f"水印处理失败: {type(e).__name__}: {str(e) or '未知错误'}",
             code=500

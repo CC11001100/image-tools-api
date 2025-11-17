@@ -44,7 +44,7 @@ async def crop_smart_by_url(
 ):
     """智能居中裁剪URL图片到指定尺寸"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = ImageService.crop_smart_center(
             image_bytes=contents,
             target_width=request.target_width,

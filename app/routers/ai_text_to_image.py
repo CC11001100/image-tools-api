@@ -6,7 +6,9 @@ import uuid
 import os
 from ..services.ai_text_to_image_service import AITextToImageService
 from ..services.file_upload_service import file_upload_service
+from ..services.billing_service import billing_service
 from ..utils.logger import logger
+from ..utils.billing_utils import estimate_operation_tokens, generate_operation_remark
 from ..schemas.response_models import ErrorResponse, ApiResponse, ImageProcessResponse, FileInfo
 from ..middleware.auth_middleware import get_current_api_token
 
@@ -35,7 +37,58 @@ async def generate_ai_image(
     """
     使用AI根据文本生成图片并上传到AIGC网盘
     """
+    call_id = None
     try:
+        # 计算预估费用 - AI生成图片属于高消耗操作
+        # 基础费用 + 根据图片尺寸和文本长度计算的额外费用
+        text_complexity_tokens = max(10, len(text) // 10)  # 文本复杂度
+        image_size_tokens = (width * height) // 10000  # 图片尺寸影响
+        estimated_tokens = 100 + text_complexity_tokens + image_size_tokens  # 基础100 + 复杂度费用
+        
+        # 准备请求上下文
+        context = {
+            "text": text,
+            "style": style,
+            "width": width,
+            "height": height,
+            "quality": quality,
+            "text_length": len(text),
+            "estimated_complexity": text_complexity_tokens
+        }
+        
+        # 生成详细备注
+        remark = generate_operation_remark(
+            "/api/v1/ai-text-to-image", f"AI文本转图片({style}风格)", {
+                "base_cost": 100,
+                "text_complexity_cost": text_complexity_tokens,
+                "image_size_cost": image_size_tokens,
+                "total_cost": estimated_tokens,
+                "breakdown": [
+                    {"name": "基础AI生成费用", "cost": 100, "unit": "Token"},
+                    {"name": "文本复杂度费用", "cost": text_complexity_tokens, "unit": "Token"},
+                    {"name": "图片尺寸费用", "cost": image_size_tokens, "unit": "Token"}
+                ]
+            },
+            文本内容=text[:50] + "..." if len(text) > 50 else text,
+            风格=style,
+            尺寸=f"{width}x{height}"
+        )
+        
+        # 预扣费 - 先付费再服务
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/ai-text-to-image",
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=remark
+        )
+        
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
+
         # 创建服务实例
         ai_service = AITextToImageService()
 
@@ -90,11 +143,24 @@ async def generate_ai_image(
         return ApiResponse.success(
             message="AI文本转图片生成并上传成功",
             data={
-                "file": file_info.dict(),
-                "processing_info": parameters
+                "file_info": file_info.dict(),
+                "processing_info": parameters,
+                "billing_info": {
+                    "base_cost": 100,
+                    "text_complexity_cost": text_complexity_tokens,
+                    "image_size_cost": image_size_tokens,
+                    "total_cost": estimated_tokens
+                }
             }
         )
+        
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"AI图片生成失败: {str(e)}")
         return ApiResponse.error(
             message=str(e),
             code=500
@@ -106,9 +172,59 @@ async def generate_ai_image_by_url(
     api_token: str = Depends(get_current_api_token)
 ):
     """
-    使用AI根据文本生成图片（URL方式）并上传到AIGC网盘
+    使用AI根据文本生成图片并上传到AIGC网盘 (URL版本)
     """
+    call_id = None
     try:
+        # 计算预估费用 - AI生成图片属于高消耗操作
+        text_complexity_tokens = max(10, len(request.text) // 10)  # 文本复杂度
+        image_size_tokens = (request.width * request.height) // 10000  # 图片尺寸影响
+        estimated_tokens = 100 + text_complexity_tokens + image_size_tokens  # 基础100 + 复杂度费用
+        
+        # 准备请求上下文
+        context = {
+            "text": request.text,
+            "style": request.style,
+            "width": request.width,
+            "height": request.height,
+            "quality": request.quality,
+            "text_length": len(request.text),
+            "estimated_complexity": text_complexity_tokens
+        }
+        
+        # 生成详细备注
+        remark = generate_operation_remark(
+            "/api/v1/ai-text-to-image-by-url", f"AI文本转图片({request.style}风格)", {
+                "base_cost": 100,
+                "text_complexity_cost": text_complexity_tokens,
+                "image_size_cost": image_size_tokens,
+                "total_cost": estimated_tokens,
+                "breakdown": [
+                    {"name": "基础AI生成费用", "cost": 100, "unit": "Token"},
+                    {"name": "文本复杂度费用", "cost": text_complexity_tokens, "unit": "Token"},
+                    {"name": "图片尺寸费用", "cost": image_size_tokens, "unit": "Token"}
+                ]
+            },
+            文本内容=request.text[:50] + "..." if len(request.text) > 50 else request.text,
+            风格=request.style,
+            尺寸=f"{request.width}x{request.height}"
+        )
+        
+        # 预扣费 - 先付费再服务
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/ai-text-to-image-by-url",
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=remark
+        )
+        
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
+
         # 创建服务实例
         ai_service = AITextToImageService()
 
@@ -163,11 +279,24 @@ async def generate_ai_image_by_url(
         return ApiResponse.success(
             message="AI文本转图片生成并上传成功",
             data={
-                "file": file_info.dict(),
-                "processing_info": parameters
+                "file_info": file_info.dict(),
+                "processing_info": parameters,
+                "billing_info": {
+                    "base_cost": 100,
+                    "text_complexity_cost": text_complexity_tokens,
+                    "image_size_cost": image_size_tokens,
+                    "total_cost": estimated_tokens
+                }
             }
         )
+        
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"AI图片生成失败: {str(e)}")
         return ApiResponse.error(
             message=str(e),
             code=500

@@ -38,6 +38,7 @@ class BillingCallType(str, Enum):
 class BillingOperationType(str, Enum):
     REFUND_ALL = "REFUND_ALL"
     CHARGE_MORE = "CHARGE_MORE"
+    CONFIRM = "CONFIRM"
 
 
 class BillingStatus(str, Enum):

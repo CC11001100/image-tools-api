@@ -15,15 +15,120 @@ class AnnotationService:
     def __init__(self):
         self.default_font_size = 16
         self.default_color = (255, 0, 0, 255)  # 红色
-        
+    
+    @staticmethod
     def add_annotation(
+        image_bytes: bytes,
+        annotation_type: str,
+        text: str = None,
+        color: str = "#FF0000",
+        position: str = "0,0",
+        size: float = 1.0,
+        quality: int = 90,
+        **kwargs
+    ) -> bytes:
+        """
+        为图片添加标注（静态方法）
+        
+        Args:
+            image_bytes: 输入图片的字节数据
+            annotation_type: 标注类型 (text, rectangle, circle, arrow)
+            text: 标注文本
+            color: 标注颜色
+            position: 标注位置
+            size: 标注大小
+            quality: 输出质量
+            **kwargs: 其他参数
+            
+        Returns:
+            处理后图片的字节数据
+        """
+        try:
+            # 打开图片
+            image = Image.open(io.BytesIO(image_bytes))
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            
+            # 创建图像副本
+            result_image = image.copy()
+            draw = ImageDraw.Draw(result_image)
+            
+            # 解析颜色
+            if color.startswith('#'):
+                color = color[1:]
+            r = int(color[0:2], 16)
+            g = int(color[2:4], 16)
+            b = int(color[4:6], 16)
+            color_rgb = (r, g, b, 255)
+            
+            # 解析位置
+            pos_parts = position.split(',')
+            
+            if annotation_type == 'text' and text:
+                # 文字标注
+                x, y = int(pos_parts[0]), int(pos_parts[1])
+                font_size = int(16 * size)
+                try:
+                    font = ImageFont.load_default()
+                    draw.text((x, y), text, fill=color_rgb, font=font)
+                except Exception as e:
+                    print(f"添加文字标注时出错: {e}")
+                    
+            elif annotation_type == 'rectangle':
+                # 矩形标注
+                if len(pos_parts) >= 4:
+                    x, y, w, h = map(int, pos_parts[:4])
+                    width = max(1, int(2 * size))
+                    draw.rectangle([x, y, x + w, y + h], outline=color_rgb, width=width)
+                    
+            elif annotation_type == 'circle':
+                # 圆形标注
+                if len(pos_parts) >= 3:
+                    x, y, radius = map(int, pos_parts[:3])
+                    radius = int(radius * size)
+                    width = max(1, int(2 * size))
+                    bbox = [x - radius, y - radius, x + radius, y + radius]
+                    draw.ellipse(bbox, outline=color_rgb, width=width)
+                    
+            elif annotation_type == 'arrow':
+                # 箭头标注
+                if len(pos_parts) >= 4:
+                    x1, y1, x2, y2 = map(int, pos_parts[:4])
+                    width = max(1, int(2 * size))
+                    draw.line([x1, y1, x2, y2], fill=color_rgb, width=width)
+                    
+                    # 添加箭头头部
+                    import math
+                    angle = math.atan2(y2 - y1, x2 - x1)
+                    arrow_length = 10 * size
+                    arrow_angle = math.pi / 6
+                    
+                    x3 = x2 - arrow_length * math.cos(angle - arrow_angle)
+                    y3 = y2 - arrow_length * math.sin(angle - arrow_angle)
+                    x4 = x2 - arrow_length * math.cos(angle + arrow_angle)
+                    y4 = y2 - arrow_length * math.sin(angle + arrow_angle)
+                    
+                    draw.line([x2, y2, x3, y3], fill=color_rgb, width=width)
+                    draw.line([x2, y2, x4, y4], fill=color_rgb, width=width)
+            
+            # 保存结果
+            output = io.BytesIO()
+            result_image.save(output, format='JPEG', quality=quality)
+            return output.getvalue()
+            
+        except Exception as e:
+            print(f"添加标注时出错: {e}")
+            # 返回原图
+            return image_bytes
+        
+    def add_annotation_instance(
         self,
         image: Image.Image,
         annotations: List[Dict[str, Any]],
         **kwargs
     ) -> Image.Image:
         """
-        在图片上添加标注
+        在图片上添加标注（实例方法，保持向后兼容）
         
         Args:
             image: PIL图像对象
@@ -134,4 +239,4 @@ annotation_service = AnnotationService()
 # 导出函数
 def add_annotation(*args, **kwargs):
     """添加标注到图片"""
-    return annotation_service.add_annotation(*args, **kwargs)
+    return annotation_service.add_annotation_instance(*args, **kwargs)

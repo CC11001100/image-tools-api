@@ -1,0 +1,149 @@
+---
+# HTTP 重定向到 HTTPS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: image-tools-http-redirect
+  namespace: aigchub-prod
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: aigchub-prod-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: origin-image-tools.aigchub.vip
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-frontend-service
+                port:
+                  number: 80
+    - host: image-tools.aigchub.vip
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-frontend-service
+                port:
+                  number: 80
+
+---
+# HTTPS Ingress 配置
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: image-tools-ingress
+  namespace: aigchub-prod
+  annotations:
+    # 启用 TLS
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    # 安全头中间件
+    traefik.ingress.kubernetes.io/router.middlewares: aigchub-prod-security-headers@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - origin-image-tools.aigchub.vip
+        - image-tools.aigchub.vip
+      secretName: aigchub-vip-tls
+  rules:
+    - host: origin-image-tools.aigchub.vip
+      http:
+        paths:
+          # API 路由到后端
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # 健康检查路由到后端
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # 文档路由到后端
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # OpenAPI路由到后端
+          - path: /openapi.json
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # 默认路由到前端
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-frontend-service
+                port:
+                  number: 80
+    
+    - host: image-tools.aigchub.vip
+      http:
+        paths:
+          # API 路由到后端
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # 健康检查路由到后端
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # 文档路由到后端
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # OpenAPI路由到后端
+          - path: /openapi.json
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-backend-service
+                port:
+                  number: 80
+          
+          # 默认路由到前端
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-frontend-service
+                port:
+                  number: 80

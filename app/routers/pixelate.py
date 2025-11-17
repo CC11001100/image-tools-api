@@ -2,7 +2,9 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Body, Depe
 from fastapi.responses import Response
 from ..services.pixelate_service import PixelateService
 from ..services.file_upload_service import file_upload_service
+from ..services.billing_service import billing_service
 from ..utils.image_utils import ImageUtils
+from ..utils.billing_utils import calculate_upload_only_billing, generate_operation_remark
 from ..schemas.response_models import ErrorResponse, ApiResponse, ImageProcessResponse, FileInfo
 from ..middleware.auth_middleware import get_current_api_token
 from typing import Optional
@@ -31,9 +33,46 @@ async def pixelate_image(
     """
     对图片进行像素化处理并上传到AIGC网盘
     """
-
+    call_id = None
     try:
         contents = await file.read()
+        
+        # 计算预估费用
+        billing_info = calculate_upload_only_billing(len(contents))
+        estimated_tokens = billing_info["total_cost"]
+        
+        # 准备请求上下文
+        context = {
+            "block_size": block_size,
+            "region": region,
+            "quality": quality,
+            "filename": file.filename,
+            "file_size": len(contents)
+        }
+        
+        # 生成详细备注
+        remark = generate_operation_remark(
+            "/api/v1/pixelate", f"图片像素化(块大小:{block_size})", billing_info,
+            文件名=file.filename,
+            块大小=block_size,
+            区域=region or "全图"
+        )
+        
+        # 预扣费 - 先付费再服务
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/pixelate",
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=remark
+        )
+        
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
+
         # 根据region参数选择处理方法
         if region:
             # 如果指定了区域，使用区域像素化
@@ -78,10 +117,18 @@ async def pixelate_image(
             message="像素化处理并上传成功",
             data={
                 "file_info": file_info.dict(),
-                "processing_info": parameters
+                "processing_info": parameters,
+                "billing_info": billing_info
             }
         )
+        
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"像素化处理失败: {str(e)}")
         return ApiResponse.error(
             message=str(e),
             code=500
@@ -95,8 +142,47 @@ async def pixelate_image_by_url(
     """
     对URL图片进行像素化处理并上传到AIGC网盘
     """
+    call_id = None
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
+        
+        # 计算预估费用
+        from ..utils.billing_utils import calculate_url_download_billing
+        billing_info = calculate_url_download_billing(len(contents))
+        estimated_tokens = billing_info["total_cost"]
+        
+        # 准备请求上下文
+        context = {
+            "image_url": request.image_url,
+            "block_size": request.block_size,
+            "region": request.region,
+            "quality": request.quality,
+            "download_size": len(contents)
+        }
+        
+        # 生成详细备注
+        remark = generate_operation_remark(
+            "/api/v1/pixelate-by-url", f"URL图片像素化(块大小:{request.block_size})", billing_info,
+            图片URL=request.image_url[:50] + "..." if len(request.image_url) > 50 else request.image_url,
+            块大小=request.block_size,
+            区域=request.region or "全图"
+        )
+        
+        # 预扣费 - 先付费再服务
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/pixelate-by-url",
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=remark
+        )
+        
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
+
         # 根据region参数选择处理方法
         if request.region:
             # 如果指定了区域，使用区域像素化
@@ -115,10 +201,10 @@ async def pixelate_image_by_url(
 
         # 准备上传参数
         parameters = {
+            "image_url": request.image_url,
             "block_size": request.block_size,
             "region": request.region,
-            "quality": request.quality,
-            "source_url": request.image_url
+            "quality": request.quality
         }
 
         # 上传到网盘
@@ -128,7 +214,7 @@ async def pixelate_image_by_url(
             operation_type="pixelate",
             parameters=parameters,
             original_filename=None,
-            content_type=content_type or "image/jpeg"
+            content_type="image/jpeg"
         )
 
         if not upload_response:
@@ -138,14 +224,21 @@ async def pixelate_image_by_url(
         file_info = FileInfo(**upload_response["file"])
 
         return ApiResponse.success(
-            message="URL图片像素化处理并上传成功",
+            message="URL像素化处理并上传成功",
             data={
-                "file": file_info.dict(),
-                "processing_info": parameters
-        
+                "file_info": file_info.dict(),
+                "processing_info": parameters,
+                "billing_info": billing_info
             }
         )
+        
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"URL像素化处理失败: {str(e)}")
         return ApiResponse.error(
             message=str(e),
             code=500

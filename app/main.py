@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from .routers import watermark_main, resize, filter, art_filter, perspective, blend, stitch, format
 from .routers import overlay, mask, gif, advanced_text, annotation, canvas, color
-from .routers import noise, pixelate, text_to_image, ai_text_to_image, auth_example
+from .routers import noise, pixelate, text_to_image, ai_text_to_image, auth_example, billing
 from .routers.transform.main import router as transform_router
 from .routers.enhance.main import router as enhance_router
 from .routers.crop.main import router as crop_router
@@ -57,6 +57,7 @@ app.include_router(pixelate.router)
 app.include_router(text_to_image.router)
 app.include_router(ai_text_to_image.router)
 app.include_router(auth_example.router)
+app.include_router(billing.router)
 
 # 添加静态文件服务，用于提供示例文件
 app.mount("/api/examples", StaticFiles(directory="public/examples"), name="examples")

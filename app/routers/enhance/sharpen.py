@@ -73,7 +73,7 @@ async def unsharp_mask_by_url(
 ):
     """USM锐化（非锐化遮罩）"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = EnhanceService.unsharp_mask(
             image_bytes=contents,
             radius=request.radius,
@@ -133,7 +133,7 @@ async def smart_sharpen_by_url(
 ):
     """智能锐化"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = EnhanceService.smart_sharpen(
             image_bytes=contents,
             amount=request.amount,
@@ -191,7 +191,7 @@ async def edge_sharpen_by_url(
 ):
     """边缘锐化"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = EnhanceService.edge_sharpen(
             image_bytes=contents,
             strength=request.strength,

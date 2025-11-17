@@ -25,6 +25,7 @@ import { useSearch } from '../../contexts/SearchContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { generateLoginUrl, generateRegisterUrl } from '../../utils/authUtils';
 import UserMenu from './UserMenu';
+import UserBalanceComponent from '../UserBalance';
 import { AppBarProps } from './types';
 
 const AppBar: React.FC<AppBarProps> = ({ drawerWidth, onDrawerToggle }) => {
@@ -98,8 +99,11 @@ const AppBar: React.FC<AppBarProps> = ({ drawerWidth, onDrawerToggle }) => {
           {/* 用户认证区域 */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {isAuthenticated && user ? (
-              // 已登录状态 - 显示用户信息和菜单
+              // 已登录状态 - 显示用户信息、余额和菜单
               <>
+                {/* 用户余额 */}
+                <UserBalanceComponent />
+                
                 <Chip
                   avatar={
                     <Avatar sx={{ bgcolor: 'primary.main', width: 24, height: 24, fontSize: '0.75rem' }}>

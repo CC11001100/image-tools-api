@@ -90,9 +90,9 @@ export const menuItems: MenuItem[] = [
     text: 'GIF处理',
     icon: <GifIcon />,
     children: [
-      { text: 'GIF 处理', path: '/gif', icon: <GifIcon /> },
-      { text: '图片合成GIF', path: '/create-gif', icon: <AddPhotoAlternateIcon /> },
-      { text: 'GIF拆图', path: '/extract-gif', icon: <PhotoFilterIcon /> },
+      { text: 'GIF帧提取', path: '/gif-extract', icon: <PhotoFilterIcon /> },
+      { text: 'GIF动画创建', path: '/gif-create', icon: <AddPhotoAlternateIcon /> },
+      { text: 'GIF优化压缩', path: '/gif-optimize', icon: <GifIcon /> },
     ],
   },
 ];

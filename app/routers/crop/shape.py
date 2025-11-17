@@ -65,7 +65,7 @@ async def crop_circle_by_url(
 ):
     """圆形裁剪URL图片"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = ImageService.crop_circle(
             image_bytes=contents,
             center_x=request.center_x,

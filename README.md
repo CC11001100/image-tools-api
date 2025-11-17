@@ -1,173 +1,226 @@
-# 图像处理工具箱 (Image Tools API)
+# Image Tools API
 
-一个功能完整的图像处理工具箱，提供70+ 个API接口，支持从基础图像操作到高级艺术效果的一站式解决方案。
+一个基于FastAPI和React的图片处理工具API，提供多种图片处理功能，包括缩放、水印、滤镜等。
 
-## 🌟 特性
+## 功能特性
 
-- **70+ API接口** - 覆盖水印、裁剪、滤镜、色彩调整等各种功能
-- **100+ 种效果** - 包括艺术滤镜、特效、图层混合等
-- **在线测试** - 每个API都有对应的Web界面，支持实时预览
-- **完整文档** - 内置API文档和使用示例
-- **模块化设计** - 代码整洁，易于扩展
+- 🖼️ **图片缩放**: 支持多种重采样算法的图片大小调整
+- 🏷️ **文字水印**: 为图片添加自定义文字水印
+- 🎨 **图片滤镜**: 多种艺术滤镜效果
+- 🔄 **格式转换**: 支持多种图片格式转换
+- 🔐 **用户认证**: 集成用户中心的认证系统
+- 💰 **计费系统**: 基于Token的使用计费
+- 📤 **文件上传**: 自动上传处理结果到网盘
 
-## 🚀 快速开始
+## 快速开始
 
-### 一键启动（推荐）
+### 1. 环境要求
+
+- Python 3.11+
+- Node.js 18+
+- npm 或 yarn
+
+### 2. 本地开发启动
 
 ```bash
 # 克隆项目
 git clone <repository-url>
 cd image-tools-api
 
-# 一键启动（自动清理端口并启动服务）
+# 一键启动（自动安装依赖并启动服务）
 ./start.sh
+
+# 查看服务状态
+./status.sh
+
+# 停止服务
+./stop.sh
 ```
 
-启动完成后访问：
-- 前端应用: http://localhost:58889
-- 后端API: http://localhost:58888  
-- API文档: http://localhost:58888/docs
-
-### 端口管理
-
-如果遇到端口占用问题，可以使用端口清理脚本：
+### 3. Docker部署（可选）
 
 ```bash
-# 清理端口（自动杀死占用58888和58889端口的进程）
-./kill_ports.sh
+# 使用Docker Compose启动
+docker-compose up -d
 
-# 然后启动服务
-./start.sh
+# 查看Docker服务状态
+docker-compose ps
 ```
 
-### 手动启动
+### 4. 访问服务
 
-#### 后端启动
+- **前端界面**: http://localhost:58889
+- **后端API**: http://localhost:58888
+- **API文档**: http://localhost:58888/docs
+- **健康检查**: http://localhost:58888/api/health
+
+### 5. 开发工具脚本
+
+| 脚本 | 功能 | 说明 |
+|------|------|------|
+| `./start.sh` | 启动服务 | 自动安装依赖并启动前后端服务 |
+| `./stop.sh` | 停止服务 | 优雅停止所有服务进程 |
+| `./status.sh` | 查看状态 | 检查服务运行状态和端口占用 |
+| `./clean.sh` | 清理环境 | 清理进程、临时文件和缓存 |
+
+### 6. 测试API
+
+运行测试脚本验证API功能：
+
 ```bash
-# 安装依赖
-pip install -r requirements.txt
-
-# 启动后端服务
-python start_backend.py
+./test_api.sh
 ```
 
-#### 前端启动
+## API使用示例
+
+### 图片缩放
+
 ```bash
-# 进入前端目录
-cd frontend
-
-# 安装依赖
-npm install
-
-# 启动前端服务
-npm start
+curl -X POST "http://localhost:58888/api/v1/resize" \
+  -H "Authorization: Bearer aigc-hub-your-token" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@your-image.jpg" \
+  -F "width=800" \
+  -F "height=600" \
+  -F "resample=LANCZOS"
 ```
 
-## 📦 安装依赖
+### 文字水印
 
-### 后端依赖
 ```bash
-pip install -r requirements.txt
+curl -X POST "http://localhost:58888/api/v1/watermark" \
+  -H "Authorization: Bearer aigc-hub-your-token" \
+  -H "Content-Type: multipart/form-data" \
+  -F "image=@your-image.jpg" \
+  -F "watermark_text=Your Watermark" \
+  -F "position=center" \
+  -F "font_size=48" \
+  -F "opacity=0.5"
 ```
 
-### 前端依赖
+## 环境模式
+
+项目默认为**生产模式**，如需开发模式，请设置：
+
 ```bash
-cd frontend
-npm install
+export DEVELOPMENT_MODE=true
 ```
 
-## 🛠️ 功能列表
+**生产模式特性**：
+- 真实的用户中心认证
+- 实际文件上传到AIGC网盘
+- 完整的计费系统集成
+- 严格的错误处理
 
-### 基础功能
-- ✅ 水印添加 - 文字水印，支持位置、透明度、颜色、角度调整
-- ✅ 尺寸调整 - 图片缩放，支持比例保持和质量控制
-- ✅ 基础滤镜 - 灰度、褐色、模糊、锐化、亮度、对比度
+**开发模式特性**：
+- 模拟的用户认证（以`aigc-hub-`开头的token即可）
+- 文件上传返回模拟响应，不实际上传到网盘
+- 详细的调试日志输出
 
-### 艺术滤镜
-- ✅ 油画效果、水彩效果、铅笔素描、彩色铅笔
-- ✅ 干画笔、壁画效果、木刻效果、海报边缘、粗糙蜡笔
+## 环境配置
 
-### 几何变换
-- ✅ 图片裁剪 - 矩形、圆形、多边形、智能居中裁剪
-- ✅ 图片旋转 - 自定义角度、90°/180°快速旋转
-- ✅ 图片翻转 - 水平/垂直翻转
-- ✅ 透视校正 - 手动四点校正、自动文档校正
-- ✅ 画布调整 - 扩展画布、添加边框、修改比例
+主要环境变量配置：
 
-### 高级图像处理
-- ✅ 色彩调整 - 色相/饱和度、色彩平衡、色阶、自动校正、色温调节、双色调
-- ✅ 增强效果 - 运动模糊、径向模糊、表面模糊、USM锐化、智能锐化、边缘锐化
-- ✅ 噪点处理 - 添加噪点（高斯/椒盐/胶片颗粒）、降噪处理
-- ✅ 马赛克/像素化 - 全图/区域马赛克、复古像素艺术
-
-### 图像合成
-- ✅ 图层混合 - 正常、正片叠底、滤色、叠加
-- ✅ 图片拼接 - 水平、垂直、网格拼接
-- ✅ 高级文字 - 多行文字、描边文字、阴影文字
-
-### 格式转换
-- ✅ 支持格式 - JPEG、PNG、WebP、GIF、BMP、TIFF
-- ✅ 格式信息 - EXIF数据读取
-
-## 📸 界面预览
-
-每个功能都有专门的测试页面，支持：
-- 参数实时调整
-- 图片在线预览
-- API文档查看
-- curl命令生成
-
-## 🔧 API 使用示例
-
-### 基础滤镜应用
 ```bash
-curl -X POST "http://localhost:58888/filter/apply" \
-  -F "file=@image.jpg" \
-  -F "filter_type=grayscale"
+# 环境模式（生产环境）
+ENVIRONMENT=production
+DEVELOPMENT_MODE=false
+
+# 用户中心配置
+USER_CENTER_BASE_URL=https://usersystem.aigchub.vip
+USER_CENTER_INTERNAL_TOKEN=aigc-hub-big-business
+
+# AIGC网盘配置
+AIGC_STORAGE_BASE_URL=https://aigc-network-disk.aigchub.vip
+AIGC_STORAGE_DEFAULT_CATEGORY_ID=1
+AIGC_STORAGE_DEFAULT_TAGS=图片处理,AI工具
 ```
 
-### 艺术滤镜应用
-```bash
-curl -X POST "http://localhost:58888/art-filter/apply" \
-  -F "file=@image.jpg" \
-  -F "filter_name=oil_painting" \
-  -F "radius=4" \
-  -F "intensity=30"
-```
-
-### 格式转换
-```bash
-curl -X POST "http://localhost:58888/format/convert" \
-  -F "file=@image.png" \
-  -F "target_format=webp" \
-  -F "quality=85"
-```
-
-## 📁 项目结构
+## 项目结构
 
 ```
 image-tools-api/
-├── app/                    # 后端代码
-│   ├── main.py            # FastAPI主应用
+├── app/                    # 后端应用
 │   ├── routers/           # API路由
-│   ├── services/          # 业务逻辑
-│   ├── filters/           # 滤镜实现
+│   ├── services/          # 业务服务
+│   ├── middleware/        # 中间件
+│   ├── schemas/           # 数据模型
 │   └── utils/             # 工具函数
-├── frontend/              # 前端代码
-│   ├── src/
-│   │   ├── pages/        # 功能页面
-│   │   ├── components/   # 通用组件
-│   │   └── config/       # 配置文件
-│   └── public/
-├── docs/                  # 项目文档
-├── tests/                 # 测试代码
-└── requirements.txt       # Python依赖
+├── frontend/              # 前端应用
+├── docker-compose.yml     # Docker编排配置
+├── backend.Dockerfile     # 后端Docker配置
+├── frontend.Dockerfile    # 前端Docker配置
+└── test_api.sh           # API测试脚本
 ```
 
-## 🤝 贡献
+## 支持的功能
 
-欢迎提交 Pull Request 或创建 Issue！
+### 图片处理功能
 
-## 📄 License
+- **缩放**: 调整图片尺寸，支持多种重采样算法
+- **水印**: 文字水印和图片水印
+- **滤镜**: 模糊、锐化、边缘检测等
+- **艺术滤镜**: 油画、素描、卡通等艺术效果
+- **裁剪**: 智能裁剪和自定义裁剪
+- **变换**: 旋转、翻转、透视变换
+- **增强**: 亮度、对比度、饱和度调整
+- **格式转换**: JPEG、PNG、WebP等格式互转
 
-MIT 
+### 高级功能
+
+- **批量处理**: 支持多图片批量处理
+- **GIF处理**: GIF动图编辑
+- **文字转图片**: 文本渲染为图片
+- **AI文字转图片**: AI生成图片功能
+- **图片拼接**: 多图拼接合成
+
+## 开发指南
+
+### 添加新功能
+
+1. 在`app/routers/`目录下创建新的路由文件
+2. 在`app/services/`目录下实现业务逻辑
+3. 在`app/main.py`中注册新路由
+4. 更新API文档和测试用例
+
+### 调试
+
+#### 本地开发调试
+
+```bash
+# 查看服务状态
+./status.sh
+
+# 手动启动后端（开发模式）
+cd backend
+python3 start_backend.py
+
+# 手动启动前端（开发模式）
+cd frontend
+BROWSER=none npm start
+
+# 清理环境重新开始
+./clean.sh
+./start.sh
+```
+
+#### Docker调试（可选）
+
+```bash
+# 查看后端日志
+docker-compose logs -f backend
+
+# 查看前端日志
+docker-compose logs -f frontend
+
+# 进入后端容器
+docker-compose exec backend bash
+```
+
+## 许可证
+
+MIT License
+
+## 贡献
+
+欢迎提交Issue和Pull Request来改进项目。 

@@ -77,28 +77,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     
     async def _get_user_from_request(self, request: Request) -> Optional[User]:
         """从请求中获取用户信息"""
-        # 开发模式：如果有Authorization头，创建测试用户
-        if config.DEVELOPMENT_MODE:
-            authorization = request.headers.get("Authorization")
-            print(f"🔍 开发模式 - Authorization头: {authorization}")
-            if authorization:
-                api_token = self._extract_api_token(authorization)
-                print(f"🔍 开发模式 - 提取的API Token: {api_token}")
-                if api_token and api_token.startswith("aigc-hub-"):
-                    # 创建测试用户
-                    test_user = User(
-                        id=1,
-                        phone="13800138000",
-                        email="test@example.com",
-                        nickname="测试用户",
-                        token_balance=1000,
-                        created_at=datetime.now(),
-                        last_login_time=datetime.now(),
-                        status=UserStatus.ACTIVE,
-                        api_token=api_token
-                    )
-                    logger.info(f"开发模式：创建测试用户 {test_user.nickname}")
-                    return test_user
+
 
         # 生产模式：正常的用户中心验证
         # 1. 优先从Authorization头获取api_token

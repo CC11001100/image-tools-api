@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-tools-backend
+  namespace: aigchub-prod
+  labels:
+    app: image-tools-backend
+    component: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-tools-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: image-tools-backend
+        component: backend
+    spec:
+      # 使用 Harbor 镜像仓库的认证
+      imagePullSecrets:
+        - name: harbor-secret
+      
+      containers:
+        - name: backend
+          image: docker.zhaixingren.cn/aigchub/image-tools-backend:latest
+          imagePullPolicy: IfNotPresent
+          
+          ports:
+            - name: http
+              containerPort: 58888
+              protocol: TCP
+          
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          
+          # 健康检查
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 58888
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 58888
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          # 资源限制 - 初始值，后续根据实际使用情况调整
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          
+          # 挂载目录
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/uploads
+            - name: temp
+              mountPath: /app/temp
+            - name: logs
+              mountPath: /app/logs
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+      
+      volumes:
+        - name: uploads
+          emptyDir: {}
+        - name: temp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+            type: File
+      
+      # 重启策略
+      restartPolicy: Always

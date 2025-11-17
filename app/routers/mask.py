@@ -103,7 +103,7 @@ async def apply_mask_by_url(
     为URL图片应用遮罩效果并上传到AIGC网盘
     """
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result_bytes = MaskService.apply_mask(
             image_bytes=contents,
             mask_type=request.mask_type,

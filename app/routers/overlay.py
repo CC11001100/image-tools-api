@@ -7,7 +7,9 @@ from typing import Optional, Tuple
 from ..services.overlay_service import OverlayService
 from ..services.image_service import ImageService
 from ..services.file_upload_service import file_upload_service
+from ..services.billing_service import billing_service
 from ..utils.image_utils import ImageUtils
+from ..utils.billing_utils import calculate_upload_only_billing, calculate_url_download_billing, calculate_dual_upload_billing, generate_operation_remark
 from ..schemas.response_models import ErrorResponse, ApiResponse, ImageProcessResponse, FileInfo
 from ..middleware.auth_middleware import get_current_api_token
 from pydantic import BaseModel
@@ -273,8 +275,8 @@ async def add_logo_by_url(
 ):
     """通过URL添加Logo叠加并上传到AIGC网盘"""
     try:
-        base_contents, _ = await ImageUtils.download_image_from_url(request.base_image_url)
-        logo_contents, _ = await ImageUtils.download_image_from_url(request.logo_image_url)
+        base_contents, _ = ImageUtils.download_image_from_url(request.base_image_url)
+        logo_contents, _ = ImageUtils.download_image_from_url(request.logo_image_url)
 
         base_img = Image.open(io.BytesIO(base_contents))
         logo_img = Image.open(io.BytesIO(logo_contents))

@@ -69,7 +69,7 @@ async def crop_rectangle_by_url(
 ):
     """矩形裁剪URL图片"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = ImageService.crop_rectangle(
             image_bytes=contents,
             x=request.x,

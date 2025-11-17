@@ -6,10 +6,10 @@ class Config:
     """应用配置类"""
 
     # 环境配置
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
 
     # 开发模式配置
-    DEVELOPMENT_MODE: bool = os.getenv("DEVELOPMENT_MODE", "true").lower() == "true"
+    DEVELOPMENT_MODE: bool = os.getenv("DEVELOPMENT_MODE", "false").lower() == "true"
 
     # 用户中心配置
     USER_CENTER_BASE_URL: str = os.getenv("USER_CENTER_BASE_URL", "https://usersystem.aigchub.vip")

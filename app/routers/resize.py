@@ -1,3 +1,5 @@
+import time
+import random
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Body, Depends, Request
 from ..services.resize_service import ResizeService
 from ..services.file_upload_service import file_upload_service
@@ -33,19 +35,15 @@ async def resize_image(
     height: Optional[int] = Form(None),
     maintain_aspect: Optional[bool] = Form(True),
     quality: Optional[int] = Form(90),
-    # 临时禁用认证用于示例生成
-    # current_user: User = Depends(get_current_user),
-    # api_token: str = Depends(get_current_api_token)
+    current_user: User = Depends(get_current_user),
+    api_token: str = Depends(get_current_api_token)
 ):
     """
     调整上传图片的大小并上传到AIGC网盘
     需要认证访问，按照基础费用100Token + 上传费用50Token/MB计费
     """
     api_path = "/api/v1/resize"
-    call_id = None
-
-    # 临时使用固定的API Token用于示例生成
-    api_token = "aigc-hub-1f9562c6a18247aa82050bb78ffc479c"
+    call_id = f"resize_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
 
     try:
         # 读取上传的文件
@@ -79,22 +77,20 @@ async def resize_image(
             "billing_breakdown": billing_info["breakdown"]
         }
 
-        # 1. 临时禁用预扣费用于示例生成
-        # call_id = await billing_service.pre_charge(
-        #     api_token=api_token,
-        #     api_path=api_path,
-        #     context=context,
-        #     estimated_tokens=estimated_tokens,
-        #     remark=f"图片缩放处理 - {file.filename}"
-        # )
+        # 1. 预扣费
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path=api_path,
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=f"图片缩放处理 - {file.filename}"
+        )
 
-        # if not call_id:
-        #     raise HTTPException(
-        #         status_code=402,
-        #         detail="余额不足或预扣费失败，请检查账户余额"
-        #     )
-
-        call_id = "temp_call_id_for_examples"
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
 
         # 2. 执行业务逻辑 - 上传到网盘
         upload_response = await file_upload_service.upload_processed_image(
@@ -144,16 +140,14 @@ async def resize_image(
 async def resize_image_by_url(
     request_obj: Request,
     request: ResizeByUrlRequest = Body(..., description="调整图片大小的URL请求参数"),
-    # 临时禁用认证用于测试
-    # current_user: User = Depends(get_current_user),
-    # api_token: str = Depends(get_current_api_token)
+    current_user: User = Depends(get_current_user),
+    api_token: str = Depends(get_current_api_token)
 ):
     """
     调整URL图片的大小并上传到AIGC网盘
     """
-    # 临时使用固定的API Token用于示例生成
-    api_token = "aigc-hub-1f9562c6a18247aa82050bb78ffc479c"
 
+    call_id = None
     try:
         # 处理相对路径，转换为完整URL
         if request.image_url.startswith('/'):
@@ -168,6 +162,42 @@ async def resize_image_by_url(
         else:
             # 完整URL，下载图片
             contents, _ = ImageUtils.download_image_from_url(request.image_url)
+
+        # 计算预估费用
+        billing_info = calculate_url_download_billing(len(contents))
+        estimated_tokens = billing_info["total_cost"]
+        
+        # 准备请求上下文
+        context = {
+            "width": request.width,
+            "height": request.height,
+            "maintain_aspect": request.maintain_aspect,
+            "quality": request.quality,
+            "image_url": request.image_url
+        }
+        
+        # 生成详细备注
+        remark = generate_operation_remark(
+            "/api/v1/resize-by-url", f"缩放({request.width}x{request.height})", billing_info,
+            目标尺寸=f"{request.width}x{request.height}",
+            保持比例=request.maintain_aspect,
+            图片URL=request.image_url[:50] + "..." if len(request.image_url) > 50 else request.image_url
+        )
+        
+        # 预扣费 - 先付费再服务
+        call_id = await billing_service.pre_charge(
+            api_token=api_token,
+            api_path="/api/v1/resize-by-url",
+            context=context,
+            estimated_tokens=estimated_tokens,
+            remark=remark
+        )
+        
+        if not call_id:
+            raise HTTPException(
+                status_code=402,
+                detail="余额不足或预扣费失败，请检查账户余额"
+            )
 
         # 处理图片
         result_bytes = ResizeService.resize_image(
@@ -207,11 +237,18 @@ async def resize_image_by_url(
             message="图片缩放处理并上传成功",
             data={
                 "file_info": file_info.dict(),
-                "processing_info": parameters
+                "processing_info": parameters,
+                "billing_info": billing_info
             }
         )
 
+    except HTTPException:
+        if call_id:
+            await billing_service.refund_all(call_id, "HTTP异常，退还费用")
+        raise
     except Exception as e:
+        if call_id:
+            await billing_service.refund_all(call_id, f"URL图片处理失败: {str(e)}")
         return ApiResponse.error(
             message=f"URL图片处理失败: {str(e)}",
             code=500

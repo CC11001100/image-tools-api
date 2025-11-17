@@ -57,7 +57,7 @@ async def rotate_image_by_url(
 ):
     """旋转URL图片"""
     try:
-        contents, content_type = await ImageUtils.download_image_from_url(request.image_url)
+        contents, content_type = ImageUtils.download_image_from_url(request.image_url)
         result = TransformService.rotate_image(
             image_bytes=contents,
             angle=request.angle,

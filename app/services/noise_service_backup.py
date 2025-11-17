@@ -243,6 +243,161 @@ class NoiseService:
             print(f"双边滤波去噪时出错: {e}")
             return image
 
+    def process_noise(
+        self,
+        image_bytes: bytes,
+        noise_type: str,
+        intensity: float = 1.0,
+        quality: int = 90,
+        **kwargs
+    ) -> bytes:
+        """
+        通用噪声添加方法
+        
+        Args:
+            image_bytes: 图像字节数据
+            noise_type: 噪声类型
+            intensity: 噪声强度
+            quality: 输出质量
+            **kwargs: 其他参数
+            
+        Returns:
+            处理后的图像字节数据
+        """
+        import io
+        
+        try:
+            # 加载图像
+            image = Image.open(io.BytesIO(image_bytes))
+            
+            # 确保图像模式为RGB
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            
+            # 根据噪声类型调用相应方法
+            if noise_type == "gaussian":
+                # 强度转换为标准差
+                std = intensity * 25.0
+                processed_image = self.add_gaussian_noise(image, std=std, **kwargs)
+            elif noise_type in ["salt_and_pepper", "salt_pepper"]:
+                # 强度转换为概率
+                prob = intensity * 0.05
+                processed_image = self.add_salt_pepper_noise(
+                    image, 
+                    salt_prob=prob, 
+                    pepper_prob=prob, 
+                    **kwargs
+                )
+            elif noise_type == "uniform":
+                # 强度转换为范围
+                range_val = intensity * 25.0
+                processed_image = self.add_uniform_noise(
+                    image, 
+                    low=-range_val, 
+                    high=range_val, 
+                    **kwargs
+                )
+            elif noise_type == "speckle":
+                # 强度转换为方差
+                variance = intensity * 0.1
+                processed_image = self.add_speckle_noise(image, variance=variance, **kwargs)
+            elif noise_type == "poisson":
+                # 泊松噪声的简化实现
+                processed_image = self._add_poisson_noise(image, intensity=intensity, **kwargs)
+            else:
+                raise ValueError(f"不支持的噪声类型: {noise_type}")
+            
+            # 保存到字节流
+            output = io.BytesIO()
+            processed_image.save(
+                output, 
+                format='JPEG', 
+                quality=quality,
+                optimize=True
+            )
+            
+            return output.getvalue()
+            
+        except Exception as e:
+            print(f"添加噪声时出错: {e}")
+            # 如果处理失败，返回原图
+            return image_bytes
+    
+    def _add_poisson_noise(
+        self,
+        image: Image.Image,
+        intensity: float = 1.0,
+        **kwargs
+    ) -> Image.Image:
+        """
+        添加泊松噪声（简化实现）
+        
+        Args:
+            image: PIL图像对象
+            intensity: 噪声强度
+            **kwargs: 其他参数
+            
+        Returns:
+            处理后的图像
+        """
+        try:
+            # 转换为numpy数组
+            img_array = np.array(image).astype(np.float64)
+            
+            # 生成泊松噪声
+            # 泊松分布的参数lambda等于像素值
+            scaling_factor = intensity * 0.1
+            
+            # 归一化到适当范围
+            normalized = img_array / 255.0
+            
+            # 生成泊松噪声
+            noise = np.random.poisson(normalized * 100) * scaling_factor
+            
+            # 添加噪声
+            noisy_array = img_array + noise
+            
+            # 限制像素值范围
+            noisy_array = np.clip(noisy_array, 0, 255)
+            
+            # 转换回PIL图像
+            return Image.fromarray(noisy_array.astype(np.uint8))
+            
+        except Exception as e:
+            print(f"添加泊松噪声时出错: {e}")
+            return image
+
+    @classmethod
+    def add_noise(
+        cls,
+        image_bytes: bytes,
+        noise_type: str,
+        intensity: float = 1.0,
+        quality: int = 90,
+        **kwargs
+    ) -> bytes:
+        """
+        类方法版本的噪声添加方法
+        
+        Args:
+            image_bytes: 图像字节数据
+            noise_type: 噪声类型
+            intensity: 噪声强度
+            quality: 输出质量
+            **kwargs: 其他参数
+            
+        Returns:
+            处理后的图像字节数据
+        """
+        service = cls()
+        return service.process_noise(
+            image_bytes=image_bytes,
+            noise_type=noise_type,
+            intensity=intensity,
+            quality=quality,
+            **kwargs
+        )
+
 
 # 创建全局实例
 noise_service = NoiseService()
