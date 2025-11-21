@@ -37,9 +37,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         # 检查是否需要认证
-        print(f"🔍 认证中间件检查路径: {request.url.path}")
+        # 跳过健康检查路径的日志输出以减少CPU占用
+        if request.url.path not in {"/api/health", "/health"}:
+            logger.debug(f"认证中间件检查路径: {request.url.path}")
+        
         if self._should_skip_auth(request.url.path):
-            print(f"✅ 跳过认证: {request.url.path}")
             return await call_next(request)
         
         # 获取用户信息
@@ -82,13 +84,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # 生产模式：正常的用户中心验证
         # 1. 优先从Authorization头获取api_token
         authorization = request.headers.get("Authorization")
-        print(f"🔍 Authorization头: {authorization}")
         if authorization:
             api_token = self._extract_api_token(authorization)
-            print(f"🔍 提取的API Token: {api_token}")
             if api_token:
                 user = await user_center_client.get_user_by_api_token(api_token)
-                print(f"🔍 用户查询结果: {user}")
                 if user:
                     logger.info(f"通过API token认证用户: {user.nickname}")
                     return user

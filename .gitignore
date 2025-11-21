@@ -651,9 +651,11 @@ verify_*.py
 final_*.py
 
 # Shell scripts (root level)
-*.sh
-!deploy.sh  # Keep main deploy script if needed
-# Note: deploy-prod.sh and k8s/deploy.sh are ignored for security
+# Note: Deployment scripts are now tracked for backup purposes
+# Only ignore generated/temporary shell scripts
+start_docker.sh
+clean_*.sh
+temp_*.sh
 
 # Markdown reports (root level)
 图片OSS迁移完成报告.md
@@ -768,9 +770,8 @@ processing_*
 *_tmp.*
 
 # ===== K8S DEPLOYMENT ADDITIONS =====
-# K8s deployment scripts with sensitive information
-deploy-prod.sh
-k8s/deploy.sh
+# K8s deployment scripts are now tracked for backup purposes
+# Sensitive data should be managed via environment variables or k8s secrets
 
 # K8s configuration files are tracked but sensitive data should be in secrets
 # k8s/*.yml  # Uncomment this if you want to ignore all k8s configs
