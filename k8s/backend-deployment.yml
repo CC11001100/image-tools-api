@@ -69,14 +69,14 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
           
-          # 资源限制 - 根据实际使用优化(实际：CPU 53m, Memory 97Mi)
+          # 资源限制 - 根据实际使用优化(优化后实际：CPU 2m, Memory 73Mi)
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "50m"
+              memory: "80Mi"   # 实际73Mi，留10%余量
+              cpu: "5m"        # 实际2m，留足够余量
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: "128Mi"  # 约1.7倍request，足够处理峰值
+              cpu: "50m"       # 降低限制，实际使用很低
           
           # 挂载目录
           volumeMounts:
