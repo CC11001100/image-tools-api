@@ -3,10 +3,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepseek-image-tools-backend-service
+  name: image-tools-api-backend-service
   namespace: aigchub-prod
   labels:
-    app: deepseek-image-tools-backend
+    app: image-tools-api-backend
     component: backend
 spec:
   type: ClusterIP
@@ -16,17 +16,17 @@ spec:
       targetPort: 58888
       protocol: TCP
   selector:
-    app: deepseek-image-tools-backend
+    app: image-tools-api-backend
 
 ---
 # 前端服务
 apiVersion: v1
 kind: Service
 metadata:
-  name: deepseek-image-tools-frontend-service
+  name: image-tools-api-frontend-service
   namespace: aigchub-prod
   labels:
-    app: deepseek-image-tools-frontend
+    app: image-tools-api-frontend
     component: frontend
 spec:
   type: ClusterIP
@@ -36,4 +36,4 @@ spec:
       targetPort: 80
       protocol: TCP
   selector:
-    app: deepseek-image-tools-frontend
+    app: image-tools-api-frontend

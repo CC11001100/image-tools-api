@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepseek-image-tools-backend
+  name: image-tools-api-backend
   namespace: aigchub-prod
   labels:
-    app: deepseek-image-tools-backend
+    app: image-tools-api-backend
     component: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deepseek-image-tools-backend
+      app: image-tools-api-backend
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       labels:
-        app: deepseek-image-tools-backend
+        app: image-tools-api-backend
         component: backend
     spec:
       # 使用 hostNetwork 模式，让Pod使用服务器IP (8.130.35.126)
@@ -33,7 +33,7 @@ spec:
       
       containers:
         - name: backend
-          image: docker.zhaixingren.cn/aigchub/deepseek-image-tools-backend:latest
+          image: docker.zhaixingren.cn/aigchub/image-tools-api-backend:latest
           imagePullPolicy: Always
           
           ports:

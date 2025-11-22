@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepseek-image-tools-frontend
+  name: image-tools-api-frontend
   namespace: aigchub-prod
   labels:
-    app: deepseek-image-tools-frontend
+    app: image-tools-api-frontend
     component: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deepseek-image-tools-frontend
+      app: image-tools-api-frontend
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       labels:
-        app: deepseek-image-tools-frontend
+        app: image-tools-api-frontend
         component: frontend
     spec:
       # 使用 Harbor 镜像仓库的认证
@@ -28,7 +28,7 @@ spec:
       
       containers:
         - name: frontend
-          image: docker.zhaixingren.cn/aigchub/deepseek-image-tools-frontend:latest
+          image: docker.zhaixingren.cn/aigchub/image-tools-api-frontend:latest
           imagePullPolicy: Always
           
           ports:

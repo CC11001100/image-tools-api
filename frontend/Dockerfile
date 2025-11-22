@@ -4,7 +4,7 @@
 FROM nginx:alpine
 
 # 复制本地构建产物到nginx目录
-COPY frontend/build /usr/share/nginx/html
+COPY build /usr/share/nginx/html
 
 # 创建nginx配置文件
 COPY <<EOF /etc/nginx/conf.d/default.conf

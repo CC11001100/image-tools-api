@@ -7,7 +7,7 @@
 set -e
 
 # 配置
-PROJECT_NAME="deepseek-image-tools"
+PROJECT_NAME="image-tools-api"
 HARBOR_REGISTRY="docker.zhaixingren.cn"
 HARBOR_NAMESPACE="aigchub"
 SERVER_HOST="root@8.130.35.126"
@@ -119,18 +119,18 @@ set -e
 print_green() { echo -e "\033[32m$1\033[0m"; }
 print_yellow() { echo -e "\033[33m$1\033[0m"; }
 
-PROJECT_NAME="deepseek-image-tools"
+PROJECT_NAME="image-tools-api"
 K8S_DIR="/tmp/${PROJECT_NAME}-k8s"
 NAMESPACE="aigchub-prod"
 
 # 验证镜像架构
 print_yellow "验证镜像架构..."
-docker pull docker.zhaixingren.cn/aigchub/deepseek-image-tools-backend:latest
-BACKEND_ARCH=$(docker inspect docker.zhaixingren.cn/aigchub/deepseek-image-tools-backend:latest --format="{{.Architecture}}")
+docker pull docker.zhaixingren.cn/aigchub/image-tools-api-backend:latest
+BACKEND_ARCH=$(docker inspect docker.zhaixingren.cn/aigchub/image-tools-api-backend:latest --format="{{.Architecture}}")
 print_green "后端镜像架构: ${BACKEND_ARCH}"
 
-docker pull docker.zhaixingren.cn/aigchub/deepseek-image-tools-frontend:latest
-FRONTEND_ARCH=$(docker inspect docker.zhaixingren.cn/aigchub/deepseek-image-tools-frontend:latest --format="{{.Architecture}}")
+docker pull docker.zhaixingren.cn/aigchub/image-tools-api-frontend:latest
+FRONTEND_ARCH=$(docker inspect docker.zhaixingren.cn/aigchub/image-tools-api-frontend:latest --format="{{.Architecture}}")
 print_green "前端镜像架构: ${FRONTEND_ARCH}"
 
 if [ "${BACKEND_ARCH}" != "amd64" ] || [ "${FRONTEND_ARCH}" != "amd64" ]; then
@@ -145,22 +145,22 @@ kubectl apply -f ${K8S_DIR}/service.yml
 kubectl apply -f ${K8S_DIR}/ingress.yml
 
 print_yellow "等待后端服务就绪..."
-kubectl rollout status deployment/deepseek-image-tools-backend -n ${NAMESPACE} --timeout=600s
+kubectl rollout status deployment/image-tools-api-backend -n ${NAMESPACE} --timeout=600s
 
 print_yellow "等待前端服务就绪..."
-kubectl rollout status deployment/deepseek-image-tools-frontend -n ${NAMESPACE} --timeout=300s
+kubectl rollout status deployment/image-tools-api-frontend -n ${NAMESPACE} --timeout=300s
 
 print_green "✓ K8s 部署完成"
 
 # 显示部署状态
 print_yellow "=== 部署状态 ==="
-kubectl get pods -n ${NAMESPACE} | grep deepseek-image-tools || true
-kubectl get svc -n ${NAMESPACE} | grep deepseek-image-tools || true
-kubectl get ingress -n ${NAMESPACE} | grep deepseek-image-tools || true
+kubectl get pods -n ${NAMESPACE} | grep image-tools-api || true
+kubectl get svc -n ${NAMESPACE} | grep image-tools-api || true
+kubectl get ingress -n ${NAMESPACE} | grep image-tools-api || true
 
 # 清理临时文件和镜像
 rm -rf ${K8S_DIR}
-docker rmi docker.zhaixingren.cn/aigchub/deepseek-image-tools-backend:latest docker.zhaixingren.cn/aigchub/deepseek-image-tools-frontend:latest
+docker rmi docker.zhaixingren.cn/aigchub/image-tools-api-backend:latest docker.zhaixingren.cn/aigchub/image-tools-api-frontend:latest
 ENDSSH
 
 print_green ""
@@ -172,9 +172,9 @@ print_green "  https://origin-image-tools.aigchub.vip"
 print_green "  https://image-tools.aigchub.vip"
 print_green ""
 print_green "查看日志："
-print_green "  ssh ${SERVER_HOST} 'kubectl logs -n ${K8S_NAMESPACE} -l app=deepseek-image-tools-backend --tail=100 -f'"
-print_green "  ssh ${SERVER_HOST} 'kubectl logs -n ${K8S_NAMESPACE} -l app=deepseek-image-tools-frontend --tail=100 -f'"
+print_green "  ssh ${SERVER_HOST} 'kubectl logs -n ${K8S_NAMESPACE} -l app=image-tools-api-backend --tail=100 -f'"
+print_green "  ssh ${SERVER_HOST} 'kubectl logs -n ${K8S_NAMESPACE} -l app=image-tools-api-frontend --tail=100 -f'"
 print_green ""
 print_green "查看资源使用情况："
-print_green "  ssh ${SERVER_HOST} 'kubectl top pods -n ${K8S_NAMESPACE} | grep deepseek-image-tools'"
+print_green "  ssh ${SERVER_HOST} 'kubectl top pods -n ${K8S_NAMESPACE} | grep image-tools-api'"
 print_green "======================================================"
