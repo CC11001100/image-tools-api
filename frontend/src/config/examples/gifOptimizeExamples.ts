@@ -4,8 +4,8 @@ export const gifOptimizeExamples: EffectExample[] = [
   {
     title: '网页优化',
     description: '适合网页展示的GIF优化设置，平衡文件大小和质量',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/original-web.gif',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/optimized-web.gif',
+    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-center-crop.jpg',
+    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-center-crop.jpg',
     parameters: [
       { label: '最大颜色数', value: '128' },
       { label: '缩放比例', value: '80%' },
@@ -21,8 +21,8 @@ export const gifOptimizeExamples: EffectExample[] = [
   {
     title: '社交媒体',
     description: '适合社交媒体分享的GIF优化，文件小加载快',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/original-social.gif',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/optimized-social.gif',
+    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-square-crop.jpg',
+    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-square-crop.jpg',
     parameters: [
       { label: '最大颜色数', value: '64' },
       { label: '缩放比例', value: '70%' },
@@ -40,8 +40,8 @@ export const gifOptimizeExamples: EffectExample[] = [
   {
     title: '高质量保留',
     description: '保持高质量的同时适度优化文件大小',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/original-quality.gif',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/optimized-quality.gif',
+    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-rectangle-crop.jpg',
+    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-rectangle-crop.jpg',
     parameters: [
       { label: '最大颜色数', value: '256' },
       { label: '缩放比例', value: '100%' },
@@ -57,8 +57,8 @@ export const gifOptimizeExamples: EffectExample[] = [
   {
     title: '极限压缩',
     description: '最大程度压缩文件大小，适合带宽有限的场景',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/original-extreme.gif',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/optimized-extreme.gif',
+    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-ratio-16-9.jpg',
+    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-ratio-16-9.jpg',
     parameters: [
       { label: '最大颜色数', value: '32' },
       { label: '缩放比例', value: '50%' },
@@ -76,8 +76,8 @@ export const gifOptimizeExamples: EffectExample[] = [
   {
     title: '流畅动画',
     description: '保持动画流畅度，适度优化文件大小',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/original-smooth.gif',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/optimized-smooth.gif',
+    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-original-blur.jpg',
+    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-blur.jpg',
     parameters: [
       { label: '最大颜色数', value: '128' },
       { label: '缩放比例', value: '90%' },
@@ -95,8 +95,8 @@ export const gifOptimizeExamples: EffectExample[] = [
   {
     title: '移动端优化',
     description: '针对移动设备优化，考虑屏幕尺寸和网络条件',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/original-mobile.gif',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/gif/optimized-mobile.gif',
+    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-original-sharpen.jpg',
+    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-sharpen.jpg',
     parameters: [
       { label: '最大颜色数', value: '96' },
       { label: '缩放比例', value: '60%' },
