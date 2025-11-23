@@ -78,7 +78,18 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+# 检查并激活虚拟环境
+if [ -d "venv" ]; then
+    echo -e "${BLUE}🔍 检查虚拟环境...${NC}"
+    source venv/bin/activate
+    echo -e "${GREEN}✅ 虚拟环境已激活${NC}"
+    PYTHON_CMD="venv/bin/python3"
+else
+    echo -e "${YELLOW}⚠️  未找到虚拟环境，使用系统Python${NC}"
+    PYTHON_CMD="python3"
+fi
+
+PYTHON_VERSION=$($PYTHON_CMD -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 echo -e "${GREEN}✅ Python版本: $PYTHON_VERSION${NC}"
 
 # 检查pip依赖
@@ -89,12 +100,16 @@ if [ ! -f "requirements.txt" ]; then
 fi
 
 # 检查并安装Python依赖
-echo -e "${BLUE}📦 检查并安装Python依赖...${NC}"
-pip3 install -r requirements.txt > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ Python依赖安装完成${NC}"
+if [ -d "venv" ]; then
+    echo -e "${BLUE}📦 检查并安装Python依赖...${NC}"
+    venv/bin/pip install -r requirements.txt > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Python依赖安装完成${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Python依赖安装可能有问题，继续尝试启动...${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠️  Python依赖安装可能有问题，继续尝试启动...${NC}"
+    echo -e "${YELLOW}⚠️  跳过依赖安装（未找到虚拟环境）${NC}"
 fi
 
 echo
@@ -140,7 +155,7 @@ mkdir -p logs
 
 # 启动后端服务（后台运行）
 echo -e "${BLUE}🚀 启动后端服务...${NC}"
-nohup python3 start_backend.py > logs/backend.log 2>&1 &
+nohup $PYTHON_CMD start_backend.py > logs/backend.log 2>&1 &
 BACKEND_PID=$!
 echo -e "${GREEN}✅ 后端服务已启动 (PID: $BACKEND_PID)${NC}"
 echo -e "${BLUE}📝 后端日志: logs/backend.log${NC}"
