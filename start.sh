@@ -175,18 +175,32 @@ echo
 
 # 启动前端服务（后台运行）
 echo -e "${BLUE}🚀 启动前端服务...${NC}"
-cd frontend
-nohup npm start > ../logs/frontend.log 2>&1 &
+
+# 设置环境变量，确保不自动打开浏览器
+export BROWSER=none
+
+# 使用nohup后台启动，并通过bash -c包装确保持续运行
+nohup bash -c 'cd frontend && exec npm start' > logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
-cd ..
+disown
+echo "$FRONTEND_PID" > .frontend.pid
 echo -e "${GREEN}✅ 前端服务已启动 (PID: $FRONTEND_PID)${NC}"
 echo -e "${BLUE}📝 前端日志: logs/frontend.log${NC}"
 
-echo
+# 等待前端服务启动
+echo -e "${BLUE}⏳ 等待前端服务就绪...${NC}"
+for i in {1..30}; do
+    if lsof -i :58889 > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ 前端服务运行正常${NC}"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo -e "${YELLOW}⚠️  前端服务启动超时，请检查日志${NC}"
+    fi
+    sleep 1
+done
 
-# 保存PID到文件，方便后续停止
-echo $BACKEND_PID > .backend.pid
-echo $FRONTEND_PID > .frontend.pid
+echo
 
 echo -e "${GREEN}=== 启动完成! ===${NC}"
 echo -e "${BLUE}前端界面:${NC} http://localhost:58889"
