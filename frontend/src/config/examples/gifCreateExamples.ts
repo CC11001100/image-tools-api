@@ -4,8 +4,8 @@ export const gifCreateExamples: EffectExample[] = [
   {
     title: '快速动画',
     description: '创建快速播放的GIF动画，适合展示动作序列',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-center-crop.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-center-crop.jpg',
+    originalImage: '/examples/gif/fast-animation-frame-1.jpg',
+    processedImage: '/examples/gif/fast-animation.gif',
     parameters: [
       { label: '帧持续时间', value: '100ms' },
       { label: '帧率', value: '10 FPS' },
@@ -23,8 +23,8 @@ export const gifCreateExamples: EffectExample[] = [
   {
     title: '流畅动画',
     description: '创建流畅的GIF动画，平衡速度和质量',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-square-crop.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-square-crop.jpg',
+    originalImage: '/examples/gif/basic-animation-frame-1.jpg',
+    processedImage: '/examples/gif/basic-animation.gif',
     parameters: [
       { label: '帧持续时间', value: '200ms' },
       { label: '帧率', value: '5 FPS' },
@@ -42,8 +42,8 @@ export const gifCreateExamples: EffectExample[] = [
   {
     title: '慢速展示',
     description: '创建慢速播放的GIF，适合详细展示过程',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-rectangle-crop.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-rectangle-crop.jpg',
+    originalImage: '/examples/gif/slow-animation-frame-1.jpg',
+    processedImage: '/examples/gif/slow-animation.gif',
     parameters: [
       { label: '帧持续时间', value: '800ms' },
       { label: '帧率', value: '1.25 FPS' },
@@ -61,8 +61,8 @@ export const gifCreateExamples: EffectExample[] = [
   {
     title: '高质量动画',
     description: '创建高质量GIF动画，保持最佳视觉效果',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-ratio-16-9.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-ratio-16-9.jpg',
+    originalImage: '/examples/gif/high-fps-frame-1.jpg',
+    processedImage: '/examples/gif/high-fps.gif',
     parameters: [
       { label: '帧持续时间', value: '300ms' },
       { label: '帧率', value: '3.33 FPS' },
@@ -80,8 +80,8 @@ export const gifCreateExamples: EffectExample[] = [
   {
     title: '压缩动画',
     description: '创建文件较小的GIF动画，适合网络传输',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-original-blur.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-blur.jpg',
+    originalImage: '/examples/gif/simple-switch-frame-1.jpg',
+    processedImage: '/examples/gif/simple-switch.gif',
     parameters: [
       { label: '帧持续时间', value: '250ms' },
       { label: '帧率', value: '4 FPS' },
@@ -99,8 +99,8 @@ export const gifCreateExamples: EffectExample[] = [
   {
     title: '循环展示',
     description: '创建有限循环的GIF动画，适合演示用途',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-original-sharpen.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-sharpen.jpg',
+    originalImage: '/examples/gif/loop-animation-frame-1.jpg',
+    processedImage: '/examples/gif/loop-animation.gif',
     parameters: [
       { label: '帧持续时间', value: '500ms' },
       { label: '帧率', value: '2 FPS' },

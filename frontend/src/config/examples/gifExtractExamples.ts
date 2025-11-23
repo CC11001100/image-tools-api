@@ -4,8 +4,8 @@ export const gifExtractExamples: EffectExample[] = [
   {
     title: '全帧提取',
     description: '提取GIF中的所有帧，适合完整分析动画内容',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-center-crop.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-center-crop.jpg',
+    originalImage: '/examples/gif/basic-animation.gif',
+    processedImage: '/examples/gif/basic-animation-frame-1.jpg',
     parameters: [
       { label: '输出格式', value: 'JPEG' },
       { label: '输出质量', value: '90%' },
@@ -21,8 +21,8 @@ export const gifExtractExamples: EffectExample[] = [
   {
     title: '高质量PNG',
     description: '使用PNG格式提取，保持透明度和最高质量',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-square-crop.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-square-crop.jpg',
+    originalImage: '/examples/gif/fast-animation.gif',
+    processedImage: '/examples/gif/fast-animation-frame-1.jpg',
     parameters: [
       { label: '输出格式', value: 'PNG' },
       { label: '透明支持', value: '是' },
@@ -37,8 +37,8 @@ export const gifExtractExamples: EffectExample[] = [
   {
     title: '关键帧提取',
     description: '每隔3帧提取一次，快速获取动画关键帧',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-rectangle-crop.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-rectangle-crop.jpg',
+    originalImage: '/examples/gif/slow-animation.gif',
+    processedImage: '/examples/gif/slow-animation-frame-2.jpg',
     parameters: [
       { label: '输出格式', value: 'JPEG' },
       { label: '输出质量', value: '85%' },
@@ -55,8 +55,8 @@ export const gifExtractExamples: EffectExample[] = [
   {
     title: '范围提取',
     description: '提取指定范围的帧，适合分析特定片段',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-original-ratio-16-9.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/crop/crop-ratio-16-9.jpg',
+    originalImage: '/examples/gif/loop-animation.gif',
+    processedImage: '/examples/gif/loop-animation-frame-1.jpg',
     parameters: [
       { label: '输出格式', value: 'JPEG' },
       { label: '输出质量', value: '90%' },
@@ -74,8 +74,8 @@ export const gifExtractExamples: EffectExample[] = [
   {
     title: '压缩提取',
     description: '使用较低质量设置，适合快速预览或节省空间',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-original-blur.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-blur.jpg',
+    originalImage: '/examples/gif/high-fps.gif',
+    processedImage: '/examples/gif/high-fps-frame-3.jpg',
     parameters: [
       { label: '输出格式', value: 'JPEG' },
       { label: '输出质量', value: '60%' },
@@ -92,8 +92,8 @@ export const gifExtractExamples: EffectExample[] = [
   {
     title: '精选帧提取',
     description: '提取动画中间部分的精选帧，平衡质量和数量',
-    originalImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-original-sharpen.jpg',
-    processedImage: 'https://aigchub-static.oss-cn-beijing.aliyuncs.com/image-tools-api/examples/filter/filter-sharpen.jpg',
+    originalImage: '/examples/gif/simple-switch.gif',
+    processedImage: '/examples/gif/simple-switch-frame-2.jpg',
     parameters: [
       { label: '输出格式', value: 'JPEG' },
       { label: '输出质量', value: '85%' },
