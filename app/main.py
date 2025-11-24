@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from .routers import watermark_main, resize, filter, art_filter, perspective, blend, stitch, format
 from .routers import overlay, mask, gif, advanced_text, annotation, canvas, color
-from .routers import noise, pixelate, text_to_image, ai_text_to_image, auth_example, billing
+from .routers import noise, pixelate, text_to_image, ai_text_to_image, auth_example, billing, image_info
 from .routers.transform.main import router as transform_router
 from .routers.enhance.main import router as enhance_router
 from .routers.crop.main import router as crop_router
@@ -58,6 +58,7 @@ app.include_router(text_to_image.router)
 app.include_router(ai_text_to_image.router)
 app.include_router(auth_example.router)
 app.include_router(billing.router)
+app.include_router(image_info.router)
 
 # 添加静态文件服务，用于提供示例文件
 app.mount("/api/examples", StaticFiles(directory="public/examples"), name="examples")
@@ -79,13 +80,63 @@ async def root():
 @app.get("/api/health")
 async def health_check():
     """健康检查接口"""
+    from .database import get_redis, engine
+    from .config import config
+    
+    health_data = {
+        "service": "Image Tools API",
+        "version": "1.0.0",
+        "status": "running",
+        "database": {},
+        "redis": {}
+    }
+    
+    # 检查MySQL连接
+    try:
+        if engine:
+            from sqlalchemy import text
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            health_data["database"] = {
+                "status": "connected",
+                "host": config.MYSQL_HOST,
+                "port": config.MYSQL_PORT,
+                "database": config.MYSQL_DATABASE
+            }
+        else:
+            health_data["database"] = {
+                "status": "not_configured"
+            }
+    except Exception as e:
+        health_data["database"] = {
+            "status": "error",
+            "message": str(e)
+        }
+    
+    # 检查Redis连接
+    try:
+        redis_client = get_redis()
+        if redis_client:
+            redis_client.ping()
+            health_data["redis"] = {
+                "status": "connected",
+                "host": config.REDIS_HOST,
+                "port": config.REDIS_PORT,
+                "db": config.REDIS_DB
+            }
+        else:
+            health_data["redis"] = {
+                "status": "not_configured"
+            }
+    except Exception as e:
+        health_data["redis"] = {
+            "status": "error",
+            "message": str(e)
+        }
+    
     return ApiResponse.success(
         message="服务健康状态正常",
-        data={
-            "service": "Image Tools API",
-            "version": "1.0.0",
-            "status": "running"
-        }
+        data=health_data
     )
 
 @app.exception_handler(ValidationError)
