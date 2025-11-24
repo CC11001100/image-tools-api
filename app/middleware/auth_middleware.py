@@ -36,6 +36,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
     
     async def dispatch(self, request: Request, call_next):
+        # 跳过OPTIONS请求（CORS预检请求）
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        
         # 检查是否需要认证
         # 跳过健康检查路径的日志输出以减少CPU占用
         if request.url.path not in {"/api/health", "/health"}:
