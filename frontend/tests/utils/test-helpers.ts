@@ -48,7 +48,7 @@ export class TestHelpers {
     // Check if sidebar is visible or if we can find navigation elements
     const navElements = [
       '.MuiDrawer-root:visible',
-      'text=图像工具箱',
+      'text=AI图像工具箱',
       'nav',
       '[role="navigation"]',
       '.sidebar',
@@ -257,7 +257,7 @@ export class TestHelpers {
 export const Selectors = {
   // Layout
   sidebar: '.MuiDrawer-root',
-  appTitle: 'text=图像工具箱',
+  appTitle: 'text=AI图像工具箱',
   mainContent: 'main',
   
   // Navigation

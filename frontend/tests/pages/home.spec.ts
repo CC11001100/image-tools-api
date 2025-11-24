@@ -12,7 +12,7 @@ test.describe('Home Page', () => {
 
   test('should load home page successfully', async ({ page }) => {
     // Check if the page loads without errors
-    await expect(page).toHaveTitle(/图像工具箱|Image Tools/);
+    await expect(page).toHaveTitle(/AI图像工具箱|Image Tools/);
     
     // Check if main layout is present
     await helpers.checkSidebarNavigation();

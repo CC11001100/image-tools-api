@@ -15,7 +15,7 @@ test.describe('Navigation and Layout', () => {
     await expect(page.locator('.MuiDrawer-root')).toBeVisible();
     
     // Check if the app title is visible
-    await expect(page.locator('text=图像工具箱')).toBeVisible();
+    await expect(page.locator('text=AI图像工具箱')).toBeVisible();
     
     // Check version number if present
     const versionElement = page.locator('text*=v');
@@ -293,7 +293,7 @@ test.describe('Navigation and Layout', () => {
 
   test('should have proper page titles', async ({ page }) => {
     const pageTests = [
-      { path: '/', titleContains: '图像工具箱' },
+      { path: '/', titleContains: 'AI图像工具箱' },
       { path: '/resize', titleContains: '调整大小' },
       { path: '/filter', titleContains: '滤镜' },
       { path: '/watermark', titleContains: '水印' }

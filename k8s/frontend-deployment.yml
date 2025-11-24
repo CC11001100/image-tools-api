@@ -59,13 +59,13 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
           
-          # 资源限制 - 前端nginx资源占用极少(实际：CPU 1m, Memory 2Mi)
+          # 资源限制 - 前端nginx资源占用极少(实际：CPU 1m, Memory 4Mi)
           resources:
             requests:
-              memory: "4Mi"    # 实际2Mi，留100%余量
+              memory: "6Mi"    # 实际4Mi，留50%余量
               cpu: "2m"        # 实际1m，留100%余量
             limits:
-              memory: "16Mi"   # 降低到4倍request
+              memory: "16Mi"   # 足够的峰值限制
               cpu: "20m"       # 降低限制，足够使用
       
       # 重启策略

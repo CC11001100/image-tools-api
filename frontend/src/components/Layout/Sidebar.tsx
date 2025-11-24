@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     <div>
       <Toolbar sx={{ backgroundColor: 'primary.main', color: 'white' }}>
         <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
-          图像工具箱 v5.3.7
+          AI图像工具箱 v5.3.7
         </Typography>
       </Toolbar>
       <Divider />

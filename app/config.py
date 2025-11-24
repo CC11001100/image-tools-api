@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+from urllib.parse import quote_plus
 
 
 class Config:
@@ -29,6 +30,19 @@ class Config:
     AIGC_STORAGE_DEFAULT_CATEGORY_ID: str = os.getenv("AIGC_STORAGE_DEFAULT_CATEGORY_ID", "1")
     AIGC_STORAGE_DEFAULT_TAGS: str = os.getenv("AIGC_STORAGE_DEFAULT_TAGS", "图片处理,AI工具")
 
+    # MySQL配置
+    MYSQL_HOST: str = os.getenv("MYSQL_HOST", "127.0.0.1")
+    MYSQL_PORT: int = int(os.getenv("MYSQL_PORT", "3306"))
+    MYSQL_USER: str = os.getenv("MYSQL_USER", "root")
+    MYSQL_PASSWORD: str = os.getenv("MYSQL_PASSWORD", "")
+    MYSQL_DATABASE: str = os.getenv("MYSQL_DATABASE", "image_tools_api")
+    
+    # Redis配置
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "127.0.0.1")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
+    REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD", "")
+    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
+
     @classmethod
     def get_user_center_headers(cls) -> dict:
         """获取用户中心API请求头"""
@@ -36,6 +50,19 @@ class Config:
             "X-Internal-API-Token": cls.USER_CENTER_INTERNAL_TOKEN,
             "Content-Type": "application/json"
         }
+    
+    @classmethod
+    def get_mysql_url(cls) -> str:
+        """获取MySQL连接URL"""
+        password = quote_plus(cls.MYSQL_PASSWORD) if cls.MYSQL_PASSWORD else ""
+        return f"mysql+pymysql://{cls.MYSQL_USER}:{password}@{cls.MYSQL_HOST}:{cls.MYSQL_PORT}/{cls.MYSQL_DATABASE}?charset=utf8mb4"
+    
+    @classmethod
+    def get_redis_url(cls) -> str:
+        """获取Redis连接URL"""
+        if cls.REDIS_PASSWORD:
+            return f"redis://:{cls.REDIS_PASSWORD}@{cls.REDIS_HOST}:{cls.REDIS_PORT}/{cls.REDIS_DB}"
+        return f"redis://{cls.REDIS_HOST}:{cls.REDIS_PORT}/{cls.REDIS_DB}"
 
 
 # 全局配置实例

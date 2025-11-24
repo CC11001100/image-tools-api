@@ -96,7 +96,7 @@ test.describe('Cross-Page Integration Tests', () => {
     // Return to home
     await page.goto('/');
     await helpers.waitForPageLoad();
-    await helpers.checkPageHeader('图像工具箱', '首页');
+    await helpers.checkPageHeader('AI图像工具箱', '首页');
   });
 
   test('should maintain state when navigating between pages', async ({ page }) => {

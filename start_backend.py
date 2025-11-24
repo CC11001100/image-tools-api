@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """后端启动脚本 - 生产环境配置"""
 import uvicorn
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 if __name__ == "__main__":
     # 生产环境配置：
