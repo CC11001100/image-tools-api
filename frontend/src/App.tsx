@@ -29,6 +29,7 @@ import GifPage from './pages/GifPage';
 import ImageToGifPage from './pages/ImageToGifPage';
 import GifExtractPage from './pages/GifExtractPage';
 import AnnotationPage from './pages/AnnotationPage';
+import ImageInfoPage from './pages/ImageInfoPage';
 import ApiDocs from './pages/ApiDocs';
 import AuthTestPage from './pages/AuthTestPage';
 
@@ -76,6 +77,7 @@ function App() {
               <Route path="/gif-extract" element={<GifExtractPage />} />
               <Route path="/gif-create" element={<ImageToGifPage />} />
               <Route path="/gif-optimize" element={<GifPage />} />
+              <Route path="/image-info" element={<ImageInfoPage />} />
               <Route path="/api-docs" element={<ApiDocs />} />
               <Route path="/auth-test" element={<AuthTestPage />} />
             </Routes>

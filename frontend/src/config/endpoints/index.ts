@@ -23,3 +23,4 @@ export * from './stitchEndpoint';
 export * from './transformEndpoint';
 export * from './watermarkEndpoint';
 export * from './advancedTextEndpoint';
+export * from './imageInfoEndpoint';

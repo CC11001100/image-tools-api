@@ -29,6 +29,7 @@ import {
   Collections as CollectionsIcon,
   Folder as FolderIcon,
   InsertDriveFile as InsertDriveFileIcon,
+  Info as InfoIcon,
 } from '@mui/icons-material';
 
 import { MenuItem } from './types';
@@ -84,6 +85,7 @@ export const menuItems: MenuItem[] = [
     icon: <FolderIcon />,
     children: [
       { text: '格式转换', path: '/format', icon: <InsertDriveFileIcon /> },
+      { text: '图片信息', path: '/image-info', icon: <InfoIcon /> },
     ],
   },
   {

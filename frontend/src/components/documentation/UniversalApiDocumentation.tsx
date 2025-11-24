@@ -18,6 +18,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useApiRequest } from '../../hooks/useApiRequest';
 import { ApiEndpoint } from '../../types/api';
+import { BillingInfo } from '../BillingInfo';
 
 interface UniversalApiDocumentationProps {
   endpoint: ApiEndpoint;
@@ -55,6 +56,9 @@ export const UniversalApiDocumentation: React.FC<UniversalApiDocumentationProps>
           <br />• <strong>URL模式</strong>：使用application/json格式，传入图片URL地址
         </Typography>
       </Alert>
+
+      {/* 计费说明 */}
+      <BillingInfo billingType="upload" defaultExpanded={false} />
 
       {/* 接口端点信息 */}
       <Typography variant="subtitle1" gutterBottom>

@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { CodeBlock } from '../CodeBlock';
 import { ApiEndpoint } from '../../types/api';
+import { BillingInfo } from '../BillingInfo';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -110,7 +111,7 @@ Content-Length: 245760
 }`
   };
 
-  const renderApiDoc = (doc: typeof fileUploadDoc) => (
+  const renderApiDoc = (doc: typeof fileUploadDoc, isUrlMode: boolean = false) => (
     <Box>
       {/* 接口基本信息 */}
       <Box sx={{ mb: 3 }}>
@@ -135,6 +136,11 @@ Content-Length: 245760
           <strong>Content-Type:</strong> {doc.contentType}
         </Typography>
       </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      {/* 计费说明 */}
+      <BillingInfo billingType={isUrlMode ? 'url' : 'upload'} defaultExpanded={false} />
 
       <Divider sx={{ my: 3 }} />
 
@@ -239,11 +245,11 @@ Content-Length: 245760
         </Box>
         
         <TabPanel value={value} index={0}>
-          {renderApiDoc(fileUploadDoc)}
+          {renderApiDoc(fileUploadDoc, false)}
         </TabPanel>
         
         <TabPanel value={value} index={1}>
-          {renderApiDoc(urlInputDoc)}
+          {renderApiDoc(urlInputDoc, true)}
         </TabPanel>
       </Paper>
     </Box>

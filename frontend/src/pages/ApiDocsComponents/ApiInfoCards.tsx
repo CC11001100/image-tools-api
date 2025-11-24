@@ -9,14 +9,18 @@ import {
   CardContent,
   Typography,
   Link,
+  Button,
+  Box,
+  Chip,
 } from '@mui/material';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import { API_BASE_URL } from '../../config/constants';
 import { apiEndpoints } from '../../config/apiEndpoints';
 
 export const ApiInfoCards: React.FC = () => {
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} md={3}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
@@ -29,12 +33,12 @@ export const ApiInfoCards: React.FC = () => {
               <strong>API版本：</strong> <code>v1</code>
             </Typography>
             <Typography variant="body2" paragraph>
-              <strong>认证方式：</strong> 暂不需要认证
+              <strong>认证方式：</strong> API Token
             </Typography>
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} md={3}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
@@ -49,7 +53,7 @@ export const ApiInfoCards: React.FC = () => {
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} md={3}>
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
@@ -64,6 +68,34 @@ export const ApiInfoCards: React.FC = () => {
             <Typography variant="body2">
               <strong>URL输入接口：</strong> {apiEndpoints.length} 个
             </Typography>
+          </CardContent>
+        </Card>
+      </Grid>
+      <Grid item xs={12} md={3}>
+        <Card sx={{ bgcolor: 'primary.50', borderColor: 'primary.main', borderWidth: 2, borderStyle: 'solid' }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              💰 计费说明
+            </Typography>
+            <Typography variant="body2" paragraph>
+              所有API接口按使用量计费，费用透明公开
+            </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Chip label="基础: 100 Token/次" size="small" sx={{ mb: 1, mr: 1 }} />
+              <Chip label="下载: 100 Token/MB" size="small" color="warning" sx={{ mb: 1, mr: 1 }} />
+              <Chip label="上传: 50 Token/MB" size="small" color="success" sx={{ mb: 1 }} />
+            </Box>
+            <Button
+              variant="contained"
+              size="small"
+              fullWidth
+              startIcon={<CalculateIcon />}
+              href="https://token-calc.aigchub.vip/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Token计算器
+            </Button>
           </CardContent>
         </Card>
       </Grid>
