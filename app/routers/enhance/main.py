@@ -3,6 +3,7 @@ from fastapi.responses import Response
 from ...services.enhance_service import EnhanceService
 from ...services.file_upload_service import file_upload_service
 from ...utils.image_utils import ImageUtils
+from ...utils.logger import logger
 from ...schemas.response_models import ErrorResponse, ApiResponse, ImageProcessResponse, FileInfo
 from ...middleware.auth_middleware import get_current_api_token
 from typing import Optional

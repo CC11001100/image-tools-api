@@ -36,9 +36,10 @@ async def pixelate_image(
     call_id = None
     try:
         contents = await file.read()
+        original_size = len(contents)
         
         # 计算预估费用
-        billing_info = calculate_upload_only_billing(len(contents))
+        billing_info = calculate_upload_only_billing(primary_file_size=original_size, result_size=original_size)
         estimated_tokens = billing_info["total_cost"]
         
         # 准备请求上下文

@@ -231,6 +231,65 @@ class BillingService:
         logger.info(f"计费记录 - 用户:{user_id}, 操作:{operation_type}, 费用:{cost}, 备注:{remark}")
         return True
 
+    async def get_user_balance(self, user_id: int) -> float:
+        """
+        获取用户余额
+        
+        Args:
+            user_id: 用户ID
+            
+        Returns:
+            用户余额（Token数量）
+        """
+        try:
+            # 通过用户中心客户端获取用户信息
+            user_info = await user_center_client.get_user_by_id(user_id)
+            
+            if user_info and hasattr(user_info, 'token_balance'):
+                return float(user_info.token_balance)
+            else:
+                logger.warning(f"无法获取用户 {user_id} 的余额信息")
+                return 0.0
+                
+        except Exception as e:
+            logger.error(f"获取用户余额失败: {str(e)}")
+            return 0.0
+
+    async def get_billing_history(
+        self,
+        user_id: int,
+        limit: int = 20,
+        offset: int = 0
+    ) -> list:
+        """
+        获取用户计费历史
+        
+        Args:
+            user_id: 用户ID
+            limit: 返回记录数量限制
+            offset: 偏移量
+            
+        Returns:
+            计费历史记录列表
+        """
+        try:
+            # 通过用户中心客户端获取计费历史
+            history = await user_center_client.get_billing_history(
+                user_id=user_id,
+                limit=limit,
+                offset=offset
+            )
+            
+            if history:
+                return history
+            else:
+                logger.info(f"用户 {user_id} 暂无计费历史")
+                return []
+                
+        except Exception as e:
+            logger.error(f"获取计费历史失败: {str(e)}")
+            return []
+
 
 # 全局计费服务实例
 billing_service = BillingService()

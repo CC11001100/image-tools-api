@@ -57,9 +57,10 @@ async def crop_image(
     try:
         # 读取上传的文件
         contents = await file.read()
+        original_size = len(contents)
 
-        # 计算预估费用
-        billing_info = calculate_upload_only_billing(len(contents))
+        # 计算预估费用 - 先用原始大小估算，实际处理后会更新
+        billing_info = calculate_upload_only_billing(primary_file_size=original_size, result_size=original_size)
         estimated_tokens = billing_info["total_cost"]
         
         # 准备请求上下文

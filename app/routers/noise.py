@@ -50,9 +50,10 @@ async def reduce_noise(
         )
 
         result_size = len(result_bytes)
+        original_size = len(contents)
 
         # 计算预估费用
-        billing_info = calculate_upload_only_billing(upload_size_bytes=result_size)
+        billing_info = calculate_upload_only_billing(primary_file_size=original_size, result_size=result_size)
         estimated_tokens = billing_info["total_cost"]
 
         # 准备请求上下文
@@ -157,8 +158,8 @@ async def reduce_noise_by_url(
         result_size = len(result_bytes)
 
         # 计算预估费用（下载费用 + 上传费用）
-        download_billing = calculate_url_download_billing(download_size_bytes=download_size)
-        upload_billing = calculate_upload_only_billing(upload_size_bytes=result_size)
+        download_billing = calculate_url_download_billing(download_size=download_size, result_size=result_size)
+        upload_billing = calculate_upload_only_billing(primary_file_size=download_size, result_size=result_size)
         
         total_cost = download_billing["total_cost"] + upload_billing["total_cost"]
         

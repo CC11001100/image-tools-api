@@ -63,7 +63,10 @@ async def stitch_images(
         result_size = len(result_bytes)
 
         # 计算预估费用（多文件上传，按结果大小计费）
-        billing_info = calculate_upload_only_billing(result_size)
+        # 使用第一张图片大小作为主文件大小
+        first_image_size = len(await images[0].read())
+        await images[0].seek(0)  # 重置文件指针
+        billing_info = calculate_upload_only_billing(primary_file_size=first_image_size, result_size=result_size)
         estimated_tokens = billing_info["total_cost"]
 
         # 准备上传参数

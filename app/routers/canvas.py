@@ -56,9 +56,10 @@ async def process_canvas(
         )
         
         result_size = len(result_bytes)
+        original_size = len(contents)
 
         # 计算预估费用
-        billing_info = calculate_upload_only_billing(result_size)
+        billing_info = calculate_upload_only_billing(primary_file_size=original_size, result_size=result_size)
         estimated_tokens = billing_info["total_cost"]
 
         # 准备上传参数
