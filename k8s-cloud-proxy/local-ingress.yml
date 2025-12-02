@@ -1,5 +1,5 @@
 ---
-# HTTP 重定向到 HTTPS
+# HTTP到HTTPS的重定向
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -7,6 +7,7 @@ metadata:
   namespace: aigchub-prod
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: aigchub-prod-redirect-https@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
@@ -17,7 +18,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-frontend-service
+                name: image-tools-api-frontend-local
                 port:
                   number: 80
     - host: image-tools.aigchub.vip
@@ -27,19 +28,19 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-frontend-service
+                name: image-tools-api-frontend-local
                 port:
                   number: 80
 
 ---
-# HTTPS Ingress 配置
+# HTTPS Ingress配置
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: image-tools-api-ingress
   namespace: aigchub-prod
   annotations:
-    # 启用 TLS
+    traefik.ingress.kubernetes.io/router.middlewares: aigchub-prod-security-headers@kubernetescrd
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   ingressClassName: traefik
@@ -57,7 +58,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -66,7 +67,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -75,7 +76,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -84,7 +85,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -93,7 +94,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-frontend-service
+                name: image-tools-api-frontend-local
                 port:
                   number: 80
     
@@ -105,7 +106,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -114,7 +115,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -123,7 +124,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -132,7 +133,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-backend-service
+                name: image-tools-api-backend-local
                 port:
                   number: 80
           
@@ -141,6 +142,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: image-tools-api-frontend-service
+                name: image-tools-api-frontend-local
                 port:
                   number: 80

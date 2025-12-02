@@ -217,6 +217,46 @@ docker-compose logs -f frontend
 docker-compose exec backend bash
 ```
 
+## 生产环境部署
+
+项目支持两套部署环境：
+
+### 局域网 K8s 集群部署 ⭐（推荐）
+
+部署到局域网 K8s 集群（192.168.3.42）：
+
+```bash
+# 一键部署到局域网集群
+./deploy-local.sh
+```
+
+**特点**：
+- 镜像仓库: 192.168.3.42:5000
+- 使用 kubectl-local 命令
+- 本地构建和推送，速度快
+- 域名从云服务器路由过来
+
+### 云服务器 K8s 集群部署
+
+部署到云服务器 K8s 集群（8.130.35.126）：
+
+```bash
+# 部署到云服务器集群
+./deploy-prod.sh
+```
+
+### 详细部署文档
+
+- 📖 **[完整部署指南](DEPLOY.md)** - 详细的部署步骤和说明
+- 🔄 **[迁移指南](MIGRATION.md)** - 从云服务器到局域网集群的迁移
+- 📁 **[局域网配置说明](k8s-local/README.md)** - 局域网集群配置细节
+
+### 访问地址
+
+部署成功后可通过以下域名访问：
+- https://origin-image-tools.aigchub.vip
+- https://image-tools.aigchub.vip
+
 ## 许可证
 
 MIT License

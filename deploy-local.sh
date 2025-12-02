@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =====================================================
-# Image Tools API - 生产环境部署脚本
+# Image Tools API - 局域网集群部署脚本
 # =====================================================
 
 set -e
@@ -10,7 +10,6 @@ set -e
 PROJECT_NAME="image-tools-api"
 HARBOR_REGISTRY="192.168.3.42:5000"
 HARBOR_NAMESPACE="aigchub"
-SERVER_HOST="root@192.168.3.42"
 K8S_NAMESPACE="aigchub-prod"
 BUILD_DATE=$(date +%Y%m%d_%H%M%S)
 
@@ -28,9 +27,10 @@ print_blue() { echo -e "\033[34m$1\033[0m"; }
 trap 'print_red "部署失败，退出"; exit 1' ERR
 
 print_green "======================================================"
-print_green "  Image Tools API - 生产环境部署"
+print_green "  Image Tools API - 局域网集群部署"
 print_green "======================================================"
 print_blue "构建时间: ${BUILD_DATE}"
+print_blue "目标集群: 192.168.3.42"
 print_green ""
 
 # 0. 清理旧镜像释放空间
@@ -101,67 +101,34 @@ print_yellow "清理Docker构建缓存..."
 docker builder prune -f --filter "until=24h"
 print_green "✓ 构建缓存清理完成"
 
-# 6. SSH 到服务器部署到 K8s
-print_green "=== [6/6] 部署到 K8s ==="
-print_yellow "连接到服务器: ${SERVER_HOST}"
+# 6. 部署到局域网 K8s 集群
+print_green "=== [6/6] 部署到局域网 K8s 集群 ==="
+print_yellow "使用 kubectl-local 部署..."
 
-# 上传 K8s 配置文件到服务器
-print_yellow "上传 K8s 配置文件..."
-ssh ${SERVER_HOST} "mkdir -p /tmp/${PROJECT_NAME}-k8s"
-scp -r k8s/* ${SERVER_HOST}:/tmp/${PROJECT_NAME}-k8s/
+# 应用 K8s 配置
+print_yellow "应用 Deployment 配置..."
+kubectl --context=k3s-local apply -f k8s-local/backend-deployment.yml
+kubectl --context=k3s-local apply -f k8s-local/frontend-deployment.yml
 
-# 在服务器上执行部署
-print_yellow "执行 K8s 部署..."
-ssh ${SERVER_HOST} << 'ENDSSH'
-set -e
+print_yellow "应用 Service 配置..."
+kubectl --context=k3s-local apply -f k8s-local/service.yml
 
-# 颜色输出
-print_green() { echo -e "\033[32m$1\033[0m"; }
-print_yellow() { echo -e "\033[33m$1\033[0m"; }
-
-PROJECT_NAME="image-tools-api"
-K8S_DIR="/tmp/${PROJECT_NAME}-k8s"
-NAMESPACE="aigchub-prod"
-
-# 验证镜像架构
-print_yellow "验证镜像架构..."
-docker pull docker.zhaixingren.cn/aigchub/image-tools-api-backend:latest
-BACKEND_ARCH=$(docker inspect docker.zhaixingren.cn/aigchub/image-tools-api-backend:latest --format="{{.Architecture}}")
-print_green "后端镜像架构: ${BACKEND_ARCH}"
-
-docker pull docker.zhaixingren.cn/aigchub/image-tools-api-frontend:latest
-FRONTEND_ARCH=$(docker inspect docker.zhaixingren.cn/aigchub/image-tools-api-frontend:latest --format="{{.Architecture}}")
-print_green "前端镜像架构: ${FRONTEND_ARCH}"
-
-if [ "${BACKEND_ARCH}" != "amd64" ] || [ "${FRONTEND_ARCH}" != "amd64" ]; then
-    echo "错误：镜像架构不是 amd64"
-    exit 1
-fi
-
-print_yellow "应用 K8s 配置..."
-kubectl apply -n aigchub-prod -f ${K8S_DIR}/backend-deployment.yml
-kubectl apply -n aigchub-prod -f ${K8S_DIR}/frontend-deployment.yml
-kubectl apply -n aigchub-prod -f ${K8S_DIR}/service.yml
-kubectl apply -n aigchub-prod -f ${K8S_DIR}/ingress.yml
+print_yellow "应用 Ingress 配置..."
+kubectl --context=k3s-local apply -f k8s-local/ingress.yml
 
 print_yellow "等待后端服务就绪..."
-kubectl rollout -n aigchub-prod status deployment/image-tools-api-backend -n ${NAMESPACE} --timeout=600s
+kubectl --context=k3s-local rollout status deployment/image-tools-api-backend -n ${K8S_NAMESPACE} --timeout=600s
 
 print_yellow "等待前端服务就绪..."
-kubectl rollout -n aigchub-prod status deployment/image-tools-api-frontend -n ${NAMESPACE} --timeout=300s
+kubectl --context=k3s-local rollout status deployment/image-tools-api-frontend -n ${K8S_NAMESPACE} --timeout=300s
 
 print_green "✓ K8s 部署完成"
 
 # 显示部署状态
 print_yellow "=== 部署状态 ==="
-kubectl get -n aigchub-prod pods -n ${NAMESPACE} | grep image-tools-api || true
-kubectl get -n aigchub-prod svc -n ${NAMESPACE} | grep image-tools-api || true
-kubectl get -n aigchub-prod ingress -n ${NAMESPACE} | grep image-tools-api || true
-
-# 清理临时文件和镜像
-rm -rf ${K8S_DIR}
-docker rmi docker.zhaixingren.cn/aigchub/image-tools-api-backend:latest docker.zhaixingren.cn/aigchub/image-tools-api-frontend:latest
-ENDSSH
+kubectl --context=k3s-local get pods -n ${K8S_NAMESPACE} | grep image-tools-api || true
+kubectl --context=k3s-local get svc -n ${K8S_NAMESPACE} | grep image-tools-api || true
+kubectl --context=k3s-local get ingress -n ${K8S_NAMESPACE} | grep image-tools-api || true
 
 print_green ""
 print_green "======================================================"
@@ -172,9 +139,9 @@ print_green "  https://origin-image-tools.aigchub.vip"
 print_green "  https://image-tools.aigchub.vip"
 print_green ""
 print_green "查看日志："
-print_green "  ssh ${SERVER_HOST} 'kubectl logs -n aigchub-prod -n ${K8S_NAMESPACE} -l app=image-tools-api-backend --tail=100 -f'"
-print_green "  ssh ${SERVER_HOST} 'kubectl logs -n aigchub-prod -n ${K8S_NAMESPACE} -l app=image-tools-api-frontend --tail=100 -f'"
+print_green "  kubectl --context=k3s-local logs -n ${K8S_NAMESPACE} -l app=image-tools-api-backend --tail=100 -f"
+print_green "  kubectl --context=k3s-local logs -n ${K8S_NAMESPACE} -l app=image-tools-api-frontend --tail=100 -f"
 print_green ""
 print_green "查看资源使用情况："
-print_green "  ssh ${SERVER_HOST} 'kubectl top pods -n ${K8S_NAMESPACE} | grep image-tools-api'"
+print_green "  kubectl --context=k3s-local top pods -n ${K8S_NAMESPACE} | grep image-tools-api"
 print_green "======================================================"

@@ -1,0 +1,86 @@
+---
+# Traefik ServersTransport - 配置到局域网的HTTPS连接（不验证证书）
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: lan-transport
+  namespace: aigchub-prod
+spec:
+  insecureSkipVerify: true
+
+---
+# HTTP到HTTPS的重定向
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: image-tools-api-http-redirect
+  namespace: aigchub-prod
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: aigchub-prod-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: origin-image-tools.aigchub.vip
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-lan-proxy
+                port:
+                  number: 443
+    - host: image-tools.aigchub.vip
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-lan-proxy
+                port:
+                  number: 443
+
+---
+# HTTPS Ingress - 转发到局域网K8s集群
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: image-tools-api-ingress
+  namespace: aigchub-prod
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: aigchub-prod-security-headers@kubernetescrd
+    # 使用自定义transport跳过SSL验证
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: aigchub-prod-lan-transport@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - origin-image-tools.aigchub.vip
+        - image-tools.aigchub.vip
+      secretName: aigchub-vip-tls
+  rules:
+    - host: origin-image-tools.aigchub.vip
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-lan-proxy
+                port:
+                  number: 443
+    
+    - host: image-tools.aigchub.vip
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: image-tools-lan-proxy
+                port:
+                  number: 443

@@ -1,37 +1,4 @@
 ---
-# HTTP 重定向到 HTTPS
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: image-tools-api-http-redirect
-  namespace: aigchub-prod
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-spec:
-  ingressClassName: traefik
-  rules:
-    - host: origin-image-tools.aigchub.vip
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: image-tools-api-frontend-service
-                port:
-                  number: 80
-    - host: image-tools.aigchub.vip
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: image-tools-api-frontend-service
-                port:
-                  number: 80
-
----
 # HTTPS Ingress 配置
 apiVersion: networking.k8s.io/v1
 kind: Ingress

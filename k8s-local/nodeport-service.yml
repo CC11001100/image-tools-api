@@ -1,0 +1,33 @@
+---
+# Backend NodePort Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-tools-api-backend-nodeport
+  namespace: aigchub-prod
+spec:
+  type: NodePort
+  selector:
+    app: image-tools-api-backend
+  ports:
+  - port: 80
+    targetPort: 58888
+    nodePort: 30008
+    protocol: TCP
+
+---
+# Frontend NodePort Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-tools-api-frontend-nodeport
+  namespace: aigchub-prod
+spec:
+  type: NodePort
+  selector:
+    app: image-tools-api-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30009
+    protocol: TCP

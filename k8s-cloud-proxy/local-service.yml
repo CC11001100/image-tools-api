@@ -1,0 +1,49 @@
+---
+# Backend Local Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-tools-api-backend-local
+  namespace: aigchub-prod
+spec:
+  ports:
+  - port: 80
+    targetPort: 30008
+
+---
+# Backend Local Endpoints
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: image-tools-api-backend-local
+  namespace: aigchub-prod
+subsets:
+  - addresses:
+      - ip: 172.22.246.76
+    ports:
+      - port: 30008
+
+---
+# Frontend Local Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-tools-api-frontend-local
+  namespace: aigchub-prod
+spec:
+  ports:
+  - port: 80
+    targetPort: 30009
+
+---
+# Frontend Local Endpoints
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: image-tools-api-frontend-local
+  namespace: aigchub-prod
+subsets:
+  - addresses:
+      - ip: 172.22.246.76
+    ports:
+      - port: 30009
